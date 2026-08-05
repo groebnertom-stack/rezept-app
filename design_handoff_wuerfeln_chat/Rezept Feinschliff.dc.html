@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
+body{margin:0;background:#EFE9DF;font-family:'Inter',-apple-system,sans-serif;text-wrap:pretty}
+a{color:#C4592A}a:hover{color:#8A3A1D}
+.dv-turn{padding:40px 44px 32px;scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 22px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#2A2320;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 14px/1.2 'Inter',sans-serif;color:#2A2320}
+.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:12px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(42,35,32,.1);color:#2A2320;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 12px/1.3 'Inter',sans-serif;color:rgba(42,35,32,.6)}
+.dv-oname{font:600 15px/1.3 'Fraunces',Georgia,serif;color:#2A2320}
+.dv-card{max-width:100%;border-radius:12px;overflow:visible}
+.dv-opt:target .dv-oid{background:#C4592A;color:#fff}
+.dv-next{margin:26px 0 0;font:12px/1.6 'Inter',sans-serif;color:rgba(42,35,32,.55);max-width:900px}
+.phones-row{display:flex;gap:28px;align-items:flex-start}
+.phone-col{display:flex;flex-direction:column;gap:10px;align-items:center}
+.phone-lbl{font-size:0.78rem;font-weight:600;color:#8A7E75}
+@keyframes diceSpin{0%{transform:rotate(0) scale(1)}30%{transform:rotate(210deg) scale(1.1)}60%{transform:rotate(390deg) scale(0.94)}100%{transform:rotate(720deg) scale(1)}}
+@keyframes diceBounce{0%{transform:scale(1) rotate(0)}25%{transform:scale(1.18) rotate(-16deg)}50%{transform:scale(0.88) rotate(14deg)}75%{transform:scale(1.12) rotate(-8deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes cardFlipIn{0%{opacity:0;transform:translateY(16px) scale(0.94)}100%{opacity:1;transform:translateY(0) scale(1)}}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t5">
+<div class="dv-thd"><a class="dv-tid" href="#t5">5</a><span class="dv-tname">Reiter „Würfeln“ ausgestaltet — der Zufallsvorschlag ist das Zentrum, drei Zustände eines Flows</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="5a">
+<div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a><span class="dv-oname">Wurf · Vorschlag · Mengen</span> — leerer Screen mit dem Würfel in der Mitte, danach füllt das Ergebnis den Screen, Mengen live an der Personenzahl</div>
+<div class="dv-card">
+<div class="phones-row">
+
+<div class="phone-col" data-screen-label="Würfeln · vor dem Wurf">
+<div class="phone-lbl">1 · vor dem Wurf</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF6F7">
+<div style="padding:52px 20px 0;flex-shrink:0">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#9E3F5A;margin-bottom:4px">Familienküche</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;color:#2C2126;line-height:1.15">Was koche ich heute?</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 28px">
+<sc-if value="{{ cIdle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ rollC }}" style="width:132px;height:132px;border-radius:40px;background:linear-gradient(135deg,#C15A76,#9E3F5A);border:none;box-shadow:0 14px 34px rgba(158,63,90,0.32);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:58px">🎲</button>
+</sc-if>
+<sc-if value="{{ cRolling }}" hint-placeholder-val="{{ false }}">
+<div style="width:132px;height:132px;border-radius:40px;background:linear-gradient(135deg,#C15A76,#9E3F5A);box-shadow:0 14px 34px rgba(158,63,90,0.32);display:flex;align-items:center;justify-content:center;font-size:58px;animation:diceSpin 0.85s ease-in-out">🎲</div>
+</sc-if>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.3rem;color:#2C2126;text-align:center;line-height:1.2">Lass den Würfel entscheiden</div>
+<div style="text-align:center;font-size:0.8rem;color:#8E7C82;line-height:1.55">Er zieht aus <b style="color:#2C2126">18 Hauptgerichten, Suppen &amp; Salaten</b>. Nachspeisen, Gebäck und Eingemachtes bleiben außen vor.</div>
+</div>
+<div style="padding:0 20px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px">
+<div style="background:#C15A76;color:#fff;padding:7px 16px;border-radius:999px;font-size:0.8rem;font-weight:600;white-space:nowrap;flex-shrink:0">Alle 18</div>
+<div style="background:#F6EBEE;color:#2C2126;padding:7px 16px;border-radius:999px;font-size:0.8rem;font-weight:500;white-space:nowrap;border:1px solid #EFDDE2;flex-shrink:0">Hauptgericht</div>
+<div style="background:#F6EBEE;color:#2C2126;padding:7px 16px;border-radius:999px;font-size:0.8rem;font-weight:500;white-space:nowrap;border:1px solid #EFDDE2;flex-shrink:0">Suppe</div>
+<div style="background:#F6EBEE;color:#2C2126;padding:7px 16px;border-radius:999px;font-size:0.8rem;font-weight:500;white-space:nowrap;border:1px solid #EFDDE2;flex-shrink:0">Salat</div>
+</div>
+<div style="text-align:center;font-size:0.8rem;color:#9E3F5A;font-weight:600;padding:6px">Lieber selbst aus der Liste wählen</div>
+</div>
+<div style="display:flex;border-top:1px solid #EFDDE2;background:#FFFFFF;padding:10px 18px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">🎲</div>
+<div style="font-size:0.72rem;font-weight:600;color:#9E3F5A">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Fragen</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">📥</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Upload</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+<div class="phone-col" data-screen-label="Würfeln · Vorschlag">
+<div class="phone-lbl">2 · der Vorschlag</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF6F7">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:52px 20px 12px;flex-shrink:0">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#9E3F5A">Der Würfel sagt</div>
+<div style="font-size:0.7rem;color:#8E7C82">aus 18 Mahlzeiten</div>
+</div>
+<div style="flex:1;overflow:auto;padding:0 20px 12px">
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:26px;overflow:hidden;box-shadow:0 8px 26px rgba(44,33,38,0.08);animation:cardFlipIn 0.5s ease">
+<div style="background:linear-gradient(135deg,#FAE3E9 0%,#F3EDE4 100%);border-bottom:1px solid #EFDDE2;padding:20px 20px 22px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+<span style="background:#E6EFEA;color:#3C6F63;padding:4px 12px;border-radius:999px;font-size:0.7rem;font-weight:600">Hauptgericht</span>
+<span style="font-size:0.72rem;color:#8E7C82">45 Min · 4 Portionen</span>
+</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:2rem;line-height:1.12;color:#2C2126;margin-bottom:10px">Ofengemüse mit Feta</div>
+<div style="font-size:0.8rem;color:#8E7C82;line-height:1.5">Blech, 200 °C, einmal wenden — mehr braucht es nicht.</div>
+</div>
+<div style="padding:18px 20px 20px">
+<div style="font-size:0.66rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8E7C82;margin-bottom:9px">9 Zutaten</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+<span style="background:#FBF6F7;border:1px solid #EFDDE2;color:#2C2126;padding:5px 11px;border-radius:999px;font-size:0.78rem">Kartoffeln</span>
+<span style="background:#FBF6F7;border:1px solid #EFDDE2;color:#2C2126;padding:5px 11px;border-radius:999px;font-size:0.78rem">Zucchini</span>
+<span style="background:#FBF6F7;border:1px solid #EFDDE2;color:#2C2126;padding:5px 11px;border-radius:999px;font-size:0.78rem">Paprika</span>
+<span style="background:#FBF6F7;border:1px solid #EFDDE2;color:#2C2126;padding:5px 11px;border-radius:999px;font-size:0.78rem">Feta</span>
+<span style="background:#FBF6F7;border:1px solid #EFDDE2;color:#2C2126;padding:5px 11px;border-radius:999px;font-size:0.78rem">Olivenöl</span>
+<span style="color:#8E7C82;padding:5px 4px;font-size:0.78rem">+ 4 weitere</span>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#FBF6F7;border:1px solid #EFDDE2;border-radius:20px;padding:10px 12px 10px 15px">
+<div>
+<div style="font-size:0.84rem;font-weight:600;color:#2C2126">Personen</div>
+<div style="font-size:0.68rem;color:#8E7C82">Original: 4 Portionen</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ personenCMinus }}" style="width:44px;height:44px;border-radius:14px;background:#F6EBEE;border:1px solid #EFDDE2;color:#2C2126;font-size:1.25rem;line-height:1;cursor:pointer">−</button>
+<div style="min-width:34px;text-align:center;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.35rem;color:#2C2126">{{ personenC }}</div>
+<button onClick="{{ personenCPlus }}" style="width:44px;height:44px;border-radius:14px;background:#FAE3E9;border:1px solid #F0CDD7;color:#9E3F5A;font-size:1.25rem;line-height:1;cursor:pointer">+</button>
+</div>
+</div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:0 2px">
+<div style="flex:1;height:1px;background:#EFDDE2"></div>
+<div style="font-size:0.72rem;color:#8E7C82">passt nicht?</div>
+<div style="flex:1;height:1px;background:#EFDDE2"></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button onClick="{{ rollC }}" style="flex:1;background:#F6EBEE;color:#9E3F5A;border:1px solid #EFDDE2;border-radius:999px;padding:12px;font-weight:600;font-size:0.85rem;cursor:pointer">🎲 Nochmal würfeln</button>
+<button style="flex:1;background:#FFFFFF;color:#2C2126;border:1px solid #EFDDE2;border-radius:999px;padding:12px;font-weight:600;font-size:0.85rem;cursor:pointer">Aus Liste wählen</button>
+</div>
+</div>
+<div style="padding:8px 20px 12px;background:#FBF6F7;flex-shrink:0">
+<button style="width:100%;background:#C15A76;color:#fff;border:none;border-radius:999px;padding:15px;font-weight:600;font-size:0.94rem;cursor:pointer;box-shadow:0 6px 18px rgba(158,63,90,0.24)">Mengen für {{ personenC }} Personen</button>
+</div>
+<div style="display:flex;border-top:1px solid #EFDDE2;background:#FFFFFF;padding:10px 18px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">🎲</div>
+<div style="font-size:0.72rem;font-weight:600;color:#9E3F5A">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Fragen</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">📥</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Upload</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+<div class="phone-col" data-screen-label="Würfeln · Mengen">
+<div class="phone-lbl">3 · Mengen (live an der Personenzahl)</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF6F7">
+<div style="padding:52px 20px 10px;flex-shrink:0">
+<div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:#9E3F5A;font-weight:600;margin-bottom:8px">‹ Vorschlag</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.45rem;color:#2C2126;line-height:1.15">Ofengemüse mit Feta</div>
+</div>
+<div style="padding:0 20px 10px;flex-shrink:0">
+<div style="display:flex;align-items:center;justify-content:space-between;background:#FFFFFF;border:1px solid #EFDDE2;border-radius:20px;padding:9px 11px 9px 15px;box-shadow:0 2px 10px rgba(44,33,38,0.05)">
+<div>
+<div style="font-size:0.84rem;font-weight:600;color:#2C2126">{{ personenC }} Personen</div>
+<div style="font-size:0.68rem;color:#8E7C82">Original 4 Port. · Faktor {{ faktorC }}×</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ personenCMinus }}" style="width:44px;height:44px;border-radius:14px;background:#F6EBEE;border:1px solid #EFDDE2;color:#2C2126;font-size:1.25rem;line-height:1;cursor:pointer">−</button>
+<button onClick="{{ personenCPlus }}" style="width:44px;height:44px;border-radius:14px;background:#FAE3E9;border:1px solid #F0CDD7;color:#9E3F5A;font-size:1.25rem;line-height:1;cursor:pointer">+</button>
+</div>
+</div>
+</div>
+<div style="flex:1;overflow:auto;padding:6px 20px 12px">
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:22px;padding:6px 16px;box-shadow:0 2px 10px rgba(44,33,38,0.05)">
+<sc-for list="{{ mengenC }}" as="z" hint-placeholder-count="6">
+<div style="display:flex;align-items:baseline;gap:12px;padding:11px 2px;border-bottom:1px dashed #EFDDE2">
+<div style="min-width:92px;text-align:right;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1rem;color:#9E3F5A;flex-shrink:0">{{ z.menge }}</div>
+<div style="flex:1;font-size:0.88rem;color:#2C2126">{{ z.name }}</div>
+</div>
+</sc-for>
+<div style="display:flex;align-items:baseline;gap:12px;padding:11px 2px">
+<div style="min-width:92px;text-align:right;font-style:italic;font-size:0.82rem;color:#8E7C82;flex-shrink:0">nach Gefühl</div>
+<div style="flex:1;font-size:0.88rem;color:#2C2126">Salz, Pfeffer, Rosmarin</div>
+</div>
+</div>
+<div style="margin-top:12px;background:#F7EFDF;border-left:3px solid #A9762A;border-radius:0 14px 14px 0;padding:11px 13px;font-size:0.76rem;color:#A9762A;line-height:1.5">Basismenge stammt nicht aus der Quelle, sondern ist geschätzt — Mengen mit Augenmaß behandeln.</div>
+</div>
+<div style="padding:6px 20px 12px;background:#FBF6F7;flex-shrink:0;display:flex;gap:8px">
+<button style="flex:1;background:#C15A76;color:#fff;border:none;border-radius:999px;padding:14px;font-weight:600;font-size:0.9rem;cursor:pointer">Einkaufsliste kopieren</button>
+<button onClick="{{ rollC }}" style="background:#F6EBEE;color:#9E3F5A;border:1px solid #EFDDE2;border-radius:999px;padding:14px 18px;font-weight:600;font-size:0.9rem;cursor:pointer">🎲</button>
+</div>
+<div style="display:flex;border-top:1px solid #EFDDE2;background:#FFFFFF;padding:10px 18px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">🎲</div>
+<div style="font-size:0.72rem;font-weight:600;color:#9E3F5A">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Fragen</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">📥</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Upload</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+</div>
+</div>
+<div class="dv-next">Der Flow in drei Schritten: (1) Leerer Screen, Würfel groß in der Mitte, Filter und „selbst wählen“ leise am unteren Rand — der Zufall ist die Hauptsache, nicht eine Option unter vielen. (2) Nach dem Wurf füllt der Vorschlag den Screen: Titel 2 rem, Kategorie, Zeit, Zutaten-Chips, Personen-Stepper; „Nochmal würfeln“ steht unter einer Trennlinie („passt nicht?“), damit es den Vorschlag nicht überstimmt; primär ist „Mengen für N Personen“. (3) Mengenliste, die live an der Personenzahl hängt (Stepper oben fixiert, Faktor sichtbar), unten Einkaufsliste. Der Würfel ist auf allen drei Screens klickbar, der Stepper wirkt auf Screen 2 und 3 gemeinsam.</div>
+</section>
+
+<section class="dv-turn" id="t4">
+<div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">Reiter „Fragen“ neu gedacht — die Eingabe ist das Zentrum, so wie beim Würfeln der Wurf</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="4a">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a><span class="dv-oname">Eingabefeld als Hero</span> — gleiches Panel wie der Würfel, darin das Feld; Vorschläge nach Absicht gruppiert; Antwort wächst darunter</div>
+<div class="dv-card">
+<div class="phones-row">
+
+<div class="phone-col" data-screen-label="Fragen · Start">
+<div class="phone-lbl">Fragen · Start (Eingabe leer)</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF6F7">
+<div style="flex:1;overflow:auto;padding:58px 20px 16px">
+<div style="margin-bottom:16px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#9E3F5A;margin-bottom:4px">Küchen-Assistent</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;color:#2C2126;line-height:1.15">Was willst du wissen?</div>
+</div>
+<div style="background:linear-gradient(135deg,#FAE3E9 0%,#F3EDE4 100%);border:1px solid #EFDDE2;border-radius:26px;padding:18px 16px 16px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px">
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:20px;padding:14px 14px 12px;box-shadow:0 4px 14px rgba(44,33,38,0.07);display:flex;flex-direction:column;gap:10px">
+<textarea onChange="{{ onFrage }}" value="{{ frageText }}" placeholder="Frag mich etwas über eure Rezepte …" rows="3" style="border:none;outline:none;resize:none;width:100%;box-sizing:border-box;background:transparent;font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.45;color:#2C2126"></textarea>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #F6EBEE;padding-top:10px">
+<div style="font-size:0.68rem;color:#8E7C82;line-height:1.4">Antwortet nur aus euren <b style="color:#2C2126">34 Rezepten</b></div>
+<button onClick="{{ sendFrage }}" style="width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,#C15A76,#9E3F5A);border:none;box-shadow:0 6px 16px rgba(158,63,90,0.28);color:#fff;font-size:1.2rem;cursor:pointer;flex-shrink:0">↑</button>
+</div>
+</div>
+<div style="font-size:0.72rem;color:#8E7C82;line-height:1.5;text-align:center">Tippe frei — oder nimm einen Einstieg unten.</div>
+</div>
+<div style="font-size:0.66rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8E7C82;margin-bottom:8px">Aus dem Vorrat</div>
+<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">
+<sc-for list="{{ chipsVorrat }}" as="c" hint-placeholder-count="3">
+<button onClick="{{ c.pick }}" style="background:#FFFFFF;border:1px solid #EFDDE2;color:#2C2126;padding:8px 14px;border-radius:999px;font-size:0.8rem;font-family:'Inter',sans-serif;cursor:pointer;text-align:left">{{ c.label }}</button>
+</sc-for>
+</div>
+<div style="font-size:0.66rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8E7C82;margin-bottom:8px">Für viele Gäste</div>
+<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">
+<sc-for list="{{ chipsGaeste }}" as="c" hint-placeholder-count="2">
+<button onClick="{{ c.pick }}" style="background:#FFFFFF;border:1px solid #EFDDE2;color:#2C2126;padding:8px 14px;border-radius:999px;font-size:0.8rem;font-family:'Inter',sans-serif;cursor:pointer;text-align:left">{{ c.label }}</button>
+</sc-for>
+</div>
+<div style="font-size:0.66rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8E7C82;margin-bottom:8px">Schnell &amp; einfach</div>
+<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
+<sc-for list="{{ chipsSchnell }}" as="c" hint-placeholder-count="2">
+<button onClick="{{ c.pick }}" style="background:#FFFFFF;border:1px solid #EFDDE2;color:#2C2126;padding:8px 14px;border-radius:999px;font-size:0.8rem;font-family:'Inter',sans-serif;cursor:pointer;text-align:left">{{ c.label }}</button>
+</sc-for>
+</div>
+<sc-if value="{{ frageGesendet }}" hint-placeholder-val="{{ false }}">
+<div style="border-top:1px solid #EFDDE2;padding-top:14px;display:flex;flex-direction:column;gap:10px;animation:cardFlipIn 0.5s ease">
+<div style="align-self:flex-end;max-width:82%;background:#C15A76;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.86rem;line-height:1.4">{{ letzteFrage }}</div>
+<div style="background:#fff;border:1px solid #EFDDE2;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.86rem;line-height:1.45;color:#2C2126;max-width:92%">Zwei passen gut — beide sind kochbereit:</div>
+<div style="background:#fff;border:1px solid #EFDDE2;border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start">
+<div style="width:38px;height:38px;border-radius:12px;background:#FAE3E9;color:#9E3F5A;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">O</div>
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:0.98rem;color:#2C2126;line-height:1.2">Ofengemüse mit Feta</div>
+<div style="font-size:0.7rem;color:#8E7C82;margin-top:2px">Hauptgericht · 9 Zutaten</div>
+<div style="font-size:0.72rem;color:#2C2126;margin-top:4px">Kartoffeln, Zucchini, Paprika, Feta …</div>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="display:flex;border-top:1px solid #EFDDE2;background:#FFFFFF;padding:10px 18px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">🎲</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">💬</div>
+<div style="font-size:0.72rem;font-weight:600;color:#9E3F5A">Fragen</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">📥</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Upload</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+<div class="phone-col" data-screen-label="Fragen · Im Gespräch">
+<div class="phone-lbl">Fragen · im Gespräch (Eingabe unten fixiert)</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF6F7">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:52px 20px 10px;background:#FBF6F7;flex-shrink:0">
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.15rem;color:#2C2126;line-height:1.2">Küchen-Assistent</div>
+<div style="font-size:0.68rem;color:#8E7C82;margin-top:1px">34 Rezepte als Datenbasis · 21 Fragen frei</div>
+</div>
+<div style="background:#F6EBEE;border:1px solid #EFDDE2;color:#8E7C82;padding:6px 12px;border-radius:999px;font-size:0.7rem;font-weight:600;flex-shrink:0">Neu</div>
+</div>
+<div style="flex:1;overflow:auto;padding:8px 20px 12px;display:flex;flex-direction:column;gap:10px">
+<div style="align-self:flex-end;max-width:82%;background:#C15A76;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.86rem;line-height:1.4">Was kann ich mit Kartoffeln und Zwiebeln kochen?</div>
+<div style="background:#fff;border:1px solid #EFDDE2;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.86rem;line-height:1.45;color:#2C2126;max-width:92%">Zwei passen gut — beide sind kochbereit und brauchen nichts, was fehlt:</div>
+<div style="background:#fff;border:1px solid #EFDDE2;border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start">
+<div style="width:38px;height:38px;border-radius:12px;background:#FAE3E9;color:#9E3F5A;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">O</div>
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:0.98rem;color:#2C2126;line-height:1.2">Ofengemüse mit Feta</div>
+<div style="font-size:0.7rem;color:#8E7C82;margin-top:2px">Hauptgericht · 9 Zutaten</div>
+<div style="font-size:0.72rem;color:#2C2126;margin-top:4px">Kartoffeln, Zucchini, Paprika, Feta …</div>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #EFDDE2;border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start">
+<div style="width:38px;height:38px;border-radius:12px;background:#FAE3E9;color:#9E3F5A;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">K</div>
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:0.98rem;color:#2C2126;line-height:1.2">Kartoffelgratin</div>
+<div style="font-size:0.7rem;color:#8E7C82;margin-top:2px">Hauptgericht · 6 Zutaten</div>
+<div style="font-size:0.72rem;color:#2C2126;margin-top:4px">Kartoffeln, Zwiebeln, Sahne, Käse …</div>
+</div>
+</div>
+</div>
+<div style="padding:10px 16px 8px;background:#FBF6F7;flex-shrink:0">
+<div style="display:flex;gap:7px;overflow-x:auto;padding-bottom:9px">
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;color:#2C2126;padding:7px 13px;border-radius:999px;font-size:0.76rem;white-space:nowrap;flex-shrink:0">Mengen für 7 Personen?</div>
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;color:#2C2126;padding:7px 13px;border-radius:999px;font-size:0.76rem;white-space:nowrap;flex-shrink:0">Nur vegetarisch</div>
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;color:#2C2126;padding:7px 13px;border-radius:999px;font-size:0.76rem;white-space:nowrap;flex-shrink:0">Was fehlt im Vorrat?</div>
+</div>
+<div style="display:flex;align-items:flex-end;gap:8px;background:#FFFFFF;border:1.5px solid #E3C9D2;border-radius:24px;padding:8px 8px 8px 16px;box-shadow:0 6px 18px rgba(44,33,38,0.08)">
+<div style="flex:1;font-size:0.9rem;color:#2C2126;line-height:1.4;padding:9px 0">Und mit Lauch statt Zwiebeln?<span style="display:inline-block;width:1.5px;height:15px;background:#C15A76;margin-left:2px;vertical-align:-2px"></span></div>
+<button style="width:44px;height:44px;border-radius:16px;background:linear-gradient(135deg,#C15A76,#9E3F5A);border:none;color:#fff;font-size:1.15rem;cursor:pointer;flex-shrink:0">↑</button>
+</div>
+</div>
+<div style="display:flex;border-top:1px solid #EFDDE2;background:#FFFFFF;padding:10px 18px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">🎲</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">💬</div>
+<div style="font-size:0.72rem;font-weight:600;color:#9E3F5A">Fragen</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">📥</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Upload</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+</div>
+</div>
+<div class="dv-next">Links der Startzustand: das Feld sitzt im selben Gradient-Panel wie der Würfel, ist das erste Element unter der Überschrift und trägt den Sendeknopf. Statt einer Zeile Beispielfragen sind die Einstiege nach Absicht gruppiert (Vorrat / Gäste / Aufwand) — antippen füllt das Feld, ⇧ sendet. Rechts der Gesprächszustand: Kopfzeile schrumpft auf eine Zeile, der Verlauf scrollt, die Eingabe bleibt unten fixiert und optisch betont, darüber Anschlussfragen zum letzten Ergebnis.</div>
+</section>
+
+<section class="dv-turn" id="t3">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">Dritter Reiter „Upload“ — Verarbeitung der Rezeptdatenbank und Fehler in einem Bereich, Palette Heidelbeer (<a class="dv-oid" href="#2b">2b</a>)</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="3a">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a><span class="dv-oname">Upload als Pipeline-Reiter</span> — Segment „Verarbeiten / Fehler“, Steuerung oben, Protokoll unten</div>
+<div class="dv-card">
+<div class="phones-row">
+
+<div class="phone-col" data-screen-label="Upload · Verarbeiten">
+<div class="phone-lbl">Upload · Verarbeiten</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF6F7">
+<div style="flex:1;overflow:auto;padding:58px 20px 16px">
+<div style="margin-bottom:14px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#9E3F5A;margin-bottom:4px">Datenbasis</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;color:#2C2126;line-height:1.15">Upload &amp; Verarbeitung</div>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:14px">
+<div style="flex:1;background:#FFFFFF;border:1px solid #EFDDE2;border-radius:18px;padding:10px 12px">
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.4rem;color:#2C2126;line-height:1.1">34</div>
+<div style="font-size:0.62rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#8E7C82;margin-top:2px">Rezepte</div>
+</div>
+<div style="flex:1;background:#FFFFFF;border:1px solid #EFDDE2;border-radius:18px;padding:10px 12px">
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.4rem;color:#A9762A;line-height:1.1">6</div>
+<div style="font-size:0.62rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#8E7C82;margin-top:2px">offen</div>
+</div>
+<div style="flex:1;background:#FFFFFF;border:1px solid #EFDDE2;border-radius:18px;padding:10px 12px">
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.4rem;color:#B4483C;line-height:1.1">3</div>
+<div style="font-size:0.62rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#8E7C82;margin-top:2px">Fehler</div>
+</div>
+</div>
+<div style="display:flex;background:#F6EBEE;border:1px solid #EFDDE2;border-radius:999px;padding:3px;margin-bottom:16px">
+<div style="flex:1;text-align:center;background:#FFFFFF;border-radius:999px;padding:9px 0;font-size:0.8rem;font-weight:600;color:#9E3F5A;box-shadow:0 1px 3px rgba(44,33,38,0.08)">Verarbeiten</div>
+<div style="flex:1;text-align:center;padding:9px 0;font-size:0.8rem;font-weight:500;color:#8E7C82">Fehler · 3</div>
+</div>
+<div style="background:linear-gradient(135deg,#FAE3E9 0%,#F3EDE4 100%);border:1px solid #EFDDE2;border-radius:24px;padding:16px 16px 18px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.12rem;color:#2C2126;line-height:1.2">{{ queueCount }} Rezepte in der Warteschlange</div>
+<div onClick="{{ toggleRetry }}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+<sc-if value="{{ retryOn }}" hint-placeholder-val="{{ false }}">
+<div style="width:22px;height:22px;border-radius:7px;background:#C15A76;border:1px solid #C15A76;color:#fff;font-size:0.78rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">✓</div>
+</sc-if>
+<sc-if value="{{ retryOff }}" hint-placeholder-val="{{ true }}">
+<div style="width:22px;height:22px;border-radius:7px;background:#FFFFFF;border:1px solid #E3C9D2;flex-shrink:0"></div>
+</sc-if>
+<div style="font-size:0.82rem;color:#2C2126">Die 3 Fehlerfälle erneut versuchen</div>
+</div>
+<div style="font-size:0.72rem;color:#8E7C82;line-height:1.5">Quelle abrufen, Zutaten ins Schema übersetzen, Ergebnis zurück nach Notion schreiben. Jeder Durchlauf kostet einen Claude-Aufruf pro Rezept.</div>
+<sc-if value="{{ runIdle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ startRun }}" style="background:#C15A76;color:#fff;border:none;border-radius:999px;padding:13px;font-weight:600;font-size:0.9rem;cursor:pointer">Verarbeitung starten</button>
+</sc-if>
+<sc-if value="{{ running }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:7px">
+<div style="height:8px;border-radius:999px;background:#FFFFFF;border:1px solid #EFDDE2;overflow:hidden">
+<div style="height:100%;background:#C15A76;transition:width 0.35s ease;width:{{ progressPct }}"></div>
+</div>
+<div style="font-size:0.74rem;color:#9E3F5A;font-weight:500">{{ runLabel }}</div>
+</div>
+</sc-if>
+</div>
+<div style="font-size:0.66rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8E7C82;margin-bottom:8px">Warteschlange</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+<sc-for list="{{ queue }}" as="q" hint-placeholder-count="3">
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:16px;padding:11px 13px">
+<div style="font-size:0.88rem;font-weight:600;color:#2C2126;margin-bottom:6px">{{ q.titel }}</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<span style="background:#F6EBEE;border:1px solid #EFDDE2;color:#8E7C82;padding:3px 10px;border-radius:999px;font-size:0.68rem;font-weight:600">Quelle: {{ q.quelle }}</span>
+<span style="background:#F7EFDF;color:#A9762A;padding:3px 10px;border-radius:999px;font-size:0.68rem;font-weight:600">offen</span>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="font-size:0.66rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8E7C82;margin-bottom:8px">Letzter Durchlauf · 12. Mai, 19:04</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:16px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start">
+<span style="background:#E6EFEA;color:#3C6F63;padding:3px 9px;border-radius:999px;font-size:0.66rem;font-weight:600;flex-shrink:0;margin-top:1px">ok</span>
+<div>
+<div style="font-size:0.86rem;font-weight:600;color:#2C2126">Ofengemüse mit Feta</div>
+<div style="font-size:0.72rem;color:#8E7C82;margin-top:2px">9 Zutaten erkannt · Quelle: Weblink</div>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:16px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start">
+<span style="background:#E6EFEA;color:#3C6F63;padding:3px 9px;border-radius:999px;font-size:0.66rem;font-weight:600;flex-shrink:0;margin-top:1px">ok</span>
+<div>
+<div style="font-size:0.86rem;font-weight:600;color:#2C2126">Kürbissuppe</div>
+<div style="font-size:0.72rem;color:#8E7C82;margin-top:2px">7 Zutaten erkannt · Quelle: Foto, als „Kürbissuppe mit Kokos“</div>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:16px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start">
+<span style="background:#FAE4E1;color:#B4483C;padding:3px 9px;border-radius:999px;font-size:0.66rem;font-weight:600;flex-shrink:0;margin-top:1px">Fehler</span>
+<div>
+<div style="font-size:0.86rem;font-weight:600;color:#2C2126">Rhabarbergelee</div>
+<div style="font-size:0.72rem;color:#8E7C82;margin-top:2px">Seite nicht erreichbar (403) — Text nachtragen</div>
+</div>
+</div>
+</div>
+</div>
+<div style="display:flex;border-top:1px solid #EFDDE2;background:#FFFFFF;padding:10px 18px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">🎲</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Fragen</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">📥</div>
+<div style="font-size:0.72rem;font-weight:600;color:#9E3F5A">Upload</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+<div class="phone-col" data-screen-label="Upload · Fehler">
+<div class="phone-lbl">Upload · Fehler</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF6F7">
+<div style="flex:1;overflow:auto;padding:58px 20px 16px">
+<div style="margin-bottom:14px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#9E3F5A;margin-bottom:4px">Datenbasis</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;color:#2C2126;line-height:1.15">Upload &amp; Verarbeitung</div>
+</div>
+<div style="display:flex;background:#F6EBEE;border:1px solid #EFDDE2;border-radius:999px;padding:3px;margin-bottom:16px">
+<div style="flex:1;text-align:center;padding:9px 0;font-size:0.8rem;font-weight:500;color:#8E7C82">Verarbeiten</div>
+<div style="flex:1;text-align:center;background:#FFFFFF;border-radius:999px;padding:9px 0;font-size:0.8rem;font-weight:600;color:#9E3F5A;box-shadow:0 1px 3px rgba(44,33,38,0.08)">Fehler · 3</div>
+</div>
+<div style="background:#F7EFDF;border-left:3px solid #A9762A;border-radius:0 14px 14px 0;padding:11px 13px;font-size:0.76rem;color:#A9762A;line-height:1.5;margin-bottom:16px">Quellen, die sich nicht automatisch auswerten ließen. Rezepttext hier einfügen — beim nächsten Durchlauf wird er bevorzugt verwendet.</div>
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:20px;padding:14px 15px 15px;margin-bottom:10px;box-shadow:0 4px 14px rgba(44,33,38,0.06)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px">
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.05rem;color:#2C2126;line-height:1.2">Rhabarbergelee</div>
+<span style="background:#FAE4E1;color:#B4483C;padding:3px 9px;border-radius:999px;font-size:0.66rem;font-weight:600;flex-shrink:0">Fehler</span>
+</div>
+<div style="background:#FAE4E1;border-radius:12px;padding:9px 11px;font-size:0.74rem;color:#B4483C;line-height:1.45;margin-bottom:10px">Seite nicht erreichbar (403). Weder Rezepttext noch Foto hinterlegt.</div>
+<div style="font-size:0.7rem;color:#8E7C82;margin-bottom:10px;word-break:break-all">Quelle: chefkoch.de/rezepte/rhabarbergelee</div>
+<div style="font-size:0.72rem;font-weight:600;color:#2C2126;margin-bottom:6px">Rezepttext einfügen</div>
+<div style="background:#FBF6F7;border:1px solid #EFDDE2;border-radius:14px;padding:11px 12px;min-height:86px;font-size:0.78rem;color:#8E7C82;line-height:1.5;margin-bottom:10px">Zutatenliste und Portionsangabe aus der Quelle hier hineinkopieren …</div>
+<div style="display:flex;gap:8px">
+<button style="flex:1;background:#C15A76;color:#fff;border:none;border-radius:999px;padding:11px;font-weight:600;font-size:0.84rem;cursor:pointer">Speichern &amp; verarbeiten</button>
+<button style="background:#F6EBEE;color:#2C2126;border:1px solid #EFDDE2;border-radius:999px;padding:11px 15px;font-weight:600;font-size:0.84rem;cursor:pointer">Nur speichern</button>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:20px;padding:13px 15px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1rem;color:#2C2126">Zwiebelkuchen</div>
+<div style="font-size:0.72rem;color:#8E7C82;margin-top:2px">Zutaten-JSON nicht lesbar</div>
+</div>
+<div style="font-size:1.1rem;color:#8E7C82;flex-shrink:0">＋</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:20px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1rem;color:#2C2126">Hollerküchel</div>
+<div style="font-size:0.72rem;color:#8E7C82;margin-top:2px">Keine auswertbare Quelle hinterlegt</div>
+</div>
+<div style="font-size:1.1rem;color:#8E7C82;flex-shrink:0">＋</div>
+</div>
+</div>
+<div style="display:flex;border-top:1px solid #EFDDE2;background:#FFFFFF;padding:10px 18px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">🎲</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Fragen</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">📥</div>
+<div style="font-size:0.72rem;font-weight:600;color:#9E3F5A">Upload</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+</div>
+</div>
+<div class="dv-next">Der Reiter fasst die bisherigen Bereiche „Verarbeiten“ und „Fehler“ zusammen: oben Status und Start der Pipeline, im Segment „Fehler“ die Nacharbeit mit Textfeld. Tab-Bar jetzt dreiteilig: Würfeln · Fragen · Upload. Der Würfel-Button links ist klickbar, Haken und Startknopf ebenfalls.</div>
+</section>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Andere Farbwelten für <a class="dv-oid" href="#1a">1a</a> — alle hell &amp; freundlich</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a><span class="dv-oname">Salbei &amp; Honig</span> — Grün als Ruhe, Honig nur für Akzente</div>
+<div class="dv-card">
+<div class="phone-col">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#F6F7F2">
+<div style="flex:1;overflow:auto;padding:58px 20px 16px">
+<div style="margin-bottom:16px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#416B44;margin-bottom:4px">Familienküche</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;color:#22271F;line-height:1.15">Was koche ich heute?</div>
+</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:2px">
+<div style="background:#5B8C5A;color:#fff;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:600;white-space:nowrap;flex-shrink:0">Alle</div>
+<div style="background:#EDF0E7;color:#22271F;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #DFE5D8;flex-shrink:0">Hauptgericht</div>
+<div style="background:#EDF0E7;color:#22271F;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #DFE5D8;flex-shrink:0">Suppe</div>
+<div style="background:#EDF0E7;color:#22271F;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #DFE5D8;flex-shrink:0">Salat</div>
+</div>
+<div style="background:linear-gradient(135deg,#E4EDE1 0%,#F7EEDC 100%);border:1px solid #DFE5D8;border-radius:26px;padding:22px 20px;margin-bottom:18px;display:flex;flex-direction:column;align-items:center;gap:14px">
+<sc-if value="{{ aIdle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ rollA }}" style="width:92px;height:92px;border-radius:28px;background:linear-gradient(135deg,#5B8C5A,#416B44);border:none;box-shadow:0 8px 20px rgba(65,107,68,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:40px">🎲</button>
+</sc-if>
+<sc-if value="{{ aRolling }}" hint-placeholder-val="{{ false }}">
+<div style="width:92px;height:92px;border-radius:28px;background:linear-gradient(135deg,#5B8C5A,#416B44);box-shadow:0 8px 20px rgba(65,107,68,0.3);display:flex;align-items:center;justify-content:center;font-size:40px;animation:diceSpin 0.85s ease-in-out">🎲</div>
+</sc-if>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1rem;color:#22271F">Würfeln</div>
+<div style="text-align:center;font-size:0.76rem;color:#7D8878;line-height:1.5;max-width:250px">Der Würfel zieht aus <b style="color:#22271F">18 Hauptgerichten, Suppen &amp; Salaten</b> — Nachspeisen und Eingemachtes bleiben außen vor.</div>
+</div>
+<sc-if value="{{ aRevealed }}" hint-placeholder-val="{{ true }}">
+<div style="background:#FFFFFF;border:1px solid #DFE5D8;border-radius:24px;overflow:hidden;box-shadow:0 6px 20px rgba(34,39,31,0.07);animation:cardFlipIn 0.5s ease">
+<div style="background:#EDF0E7;border-bottom:1px solid #DFE5D8;padding:16px 18px 18px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+<span style="background:#fff;color:#416B44;padding:4px 12px;border-radius:999px;font-size:0.7rem;font-weight:600">{{ aRecipe.kategorie }}</span>
+<span style="font-size:0.72rem;color:#7D8878">{{ aRecipe.zeit }} · {{ aRecipe.portionen }}</span>
+</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.55rem;line-height:1.15;color:#22271F">{{ aRecipe.titel }}</div>
+</div>
+<div style="padding:16px 18px 18px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7D8878;margin-bottom:8px">{{ aRecipe.zutatenZahl }} Zutaten</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+<sc-for list="{{ aRecipe.zutaten }}" as="z" hint-placeholder-count="3">
+<span style="background:#F6F7F2;border:1px solid #DFE5D8;color:#22271F;padding:5px 11px;border-radius:999px;font-size:0.76rem">{{ z }}</span>
+</sc-for>
+<span style="color:#7D8878;padding:5px 4px;font-size:0.76rem">{{ aRecipe.zutatenRest }}</span>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#F6F7F2;border:1px solid #DFE5D8;border-radius:18px;padding:10px 12px 10px 14px;margin-bottom:12px">
+<div>
+<div style="font-size:0.82rem;font-weight:600;color:#22271F">Personen</div>
+<div style="font-size:0.68rem;color:#7D8878">Original: {{ aRecipe.portionen }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ personenAMinus }}" style="width:44px;height:44px;border-radius:14px;background:#EDF0E7;border:1px solid #DFE5D8;color:#22271F;font-size:1.25rem;line-height:1;cursor:pointer">−</button>
+<div style="min-width:34px;text-align:center;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.3rem;color:#22271F">{{ personenA }}</div>
+<button onClick="{{ personenAPlus }}" style="width:44px;height:44px;border-radius:14px;background:#E4EDE1;border:1px solid #CFE0CD;color:#416B44;font-size:1.25rem;line-height:1;cursor:pointer">+</button>
+</div>
+</div>
+<div style="display:flex;gap:8px">
+<button style="flex:1;background:#5B8C5A;color:#fff;border:none;border-radius:999px;padding:11px;font-weight:600;font-size:0.88rem;cursor:pointer">Mengen berechnen</button>
+<button onClick="{{ rollA }}" style="background:#F7EEDC;color:#8A6420;border:1px solid #EEDFBF;border-radius:999px;padding:11px 16px;font-weight:600;font-size:0.88rem;cursor:pointer">↻</button>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="display:flex;border-top:1px solid #DFE5D8;background:#FFFFFF;padding:10px 24px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">🎲</div>
+<div style="font-size:0.72rem;font-weight:600;color:#416B44">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#7D8878">Fragen</div>
+</div>
+</div>
+</div>
+</x-import>
+<div style="width:402px;box-sizing:border-box;background:#F6F7F2;border:1px solid #DFE5D8;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="align-self:flex-end;max-width:80%;background:#5B8C5A;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.86rem;line-height:1.4">Was kann ich mit Kartoffeln kochen?</div>
+<div style="background:#fff;border:1px solid #DFE5D8;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.86rem;line-height:1.45;color:#22271F;max-width:92%">Zwei passen gut — beide sind kochbereit:</div>
+<div style="background:#fff;border:1px solid #DFE5D8;border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start">
+<div style="width:38px;height:38px;border-radius:12px;background:#E4EDE1;color:#416B44;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">O</div>
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:0.98rem;color:#22271F;line-height:1.2">Ofengemüse mit Feta</div>
+<div style="font-size:0.7rem;color:#7D8878;margin-top:2px">Hauptgericht · 9 Zutaten</div>
+<div style="font-size:0.72rem;color:#22271F;margin-top:4px">Kartoffeln, Zucchini, Paprika, Feta …</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a><span class="dv-oname">Beere &amp; Creme</span> — gedecktes Beerenrot, Salbei für Kategorien</div>
+<div class="dv-card">
+<div class="phone-col">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF6F7">
+<div style="flex:1;overflow:auto;padding:58px 20px 16px">
+<div style="margin-bottom:16px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#9E3F5A;margin-bottom:4px">Familienküche</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;color:#2C2126;line-height:1.15">Was koche ich heute?</div>
+</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:2px">
+<div style="background:#C15A76;color:#fff;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:600;white-space:nowrap;flex-shrink:0">Alle</div>
+<div style="background:#F6EBEE;color:#2C2126;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #EFDDE2;flex-shrink:0">Hauptgericht</div>
+<div style="background:#F6EBEE;color:#2C2126;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #EFDDE2;flex-shrink:0">Suppe</div>
+<div style="background:#F6EBEE;color:#2C2126;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #EFDDE2;flex-shrink:0">Salat</div>
+</div>
+<div style="background:linear-gradient(135deg,#FAE3E9 0%,#F3EDE4 100%);border:1px solid #EFDDE2;border-radius:26px;padding:22px 20px;margin-bottom:18px;display:flex;flex-direction:column;align-items:center;gap:14px">
+<sc-if value="{{ aIdle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ rollA }}" style="width:92px;height:92px;border-radius:28px;background:linear-gradient(135deg,#C15A76,#9E3F5A);border:none;box-shadow:0 8px 20px rgba(158,63,90,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:40px">🎲</button>
+</sc-if>
+<sc-if value="{{ aRolling }}" hint-placeholder-val="{{ false }}">
+<div style="width:92px;height:92px;border-radius:28px;background:linear-gradient(135deg,#C15A76,#9E3F5A);box-shadow:0 8px 20px rgba(158,63,90,0.3);display:flex;align-items:center;justify-content:center;font-size:40px;animation:diceSpin 0.85s ease-in-out">🎲</div>
+</sc-if>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1rem;color:#2C2126">Würfeln</div>
+<div style="text-align:center;font-size:0.76rem;color:#8E7C82;line-height:1.5;max-width:250px">Der Würfel zieht aus <b style="color:#2C2126">18 Hauptgerichten, Suppen &amp; Salaten</b> — Nachspeisen und Eingemachtes bleiben außen vor.</div>
+</div>
+<sc-if value="{{ aRevealed }}" hint-placeholder-val="{{ true }}">
+<div style="background:#FFFFFF;border:1px solid #EFDDE2;border-radius:24px;overflow:hidden;box-shadow:0 6px 20px rgba(44,33,38,0.07);animation:cardFlipIn 0.5s ease">
+<div style="background:#F6EBEE;border-bottom:1px solid #EFDDE2;padding:16px 18px 18px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+<span style="background:#E6EFEA;color:#3C6F63;padding:4px 12px;border-radius:999px;font-size:0.7rem;font-weight:600">{{ aRecipe.kategorie }}</span>
+<span style="font-size:0.72rem;color:#8E7C82">{{ aRecipe.zeit }} · {{ aRecipe.portionen }}</span>
+</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.55rem;line-height:1.15;color:#2C2126">{{ aRecipe.titel }}</div>
+</div>
+<div style="padding:16px 18px 18px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8E7C82;margin-bottom:8px">{{ aRecipe.zutatenZahl }} Zutaten</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+<sc-for list="{{ aRecipe.zutaten }}" as="z" hint-placeholder-count="3">
+<span style="background:#FBF6F7;border:1px solid #EFDDE2;color:#2C2126;padding:5px 11px;border-radius:999px;font-size:0.76rem">{{ z }}</span>
+</sc-for>
+<span style="color:#8E7C82;padding:5px 4px;font-size:0.76rem">{{ aRecipe.zutatenRest }}</span>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#FBF6F7;border:1px solid #EFDDE2;border-radius:18px;padding:10px 12px 10px 14px;margin-bottom:12px">
+<div>
+<div style="font-size:0.82rem;font-weight:600;color:#2C2126">Personen</div>
+<div style="font-size:0.68rem;color:#8E7C82">Original: {{ aRecipe.portionen }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ personenAMinus }}" style="width:44px;height:44px;border-radius:14px;background:#F6EBEE;border:1px solid #EFDDE2;color:#2C2126;font-size:1.25rem;line-height:1;cursor:pointer">−</button>
+<div style="min-width:34px;text-align:center;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.3rem;color:#2C2126">{{ personenA }}</div>
+<button onClick="{{ personenAPlus }}" style="width:44px;height:44px;border-radius:14px;background:#FAE3E9;border:1px solid #F0CDD7;color:#9E3F5A;font-size:1.25rem;line-height:1;cursor:pointer">+</button>
+</div>
+</div>
+<div style="display:flex;gap:8px">
+<button style="flex:1;background:#C15A76;color:#fff;border:none;border-radius:999px;padding:11px;font-weight:600;font-size:0.88rem;cursor:pointer">Mengen berechnen</button>
+<button onClick="{{ rollA }}" style="background:#F6EBEE;color:#2C2126;border:1px solid #EFDDE2;border-radius:999px;padding:11px 16px;font-weight:600;font-size:0.88rem;cursor:pointer">↻</button>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="display:flex;border-top:1px solid #EFDDE2;background:#FFFFFF;padding:10px 24px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">🎲</div>
+<div style="font-size:0.72rem;font-weight:600;color:#9E3F5A">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8E7C82">Fragen</div>
+</div>
+</div>
+</div>
+</x-import>
+<div style="width:402px;box-sizing:border-box;background:#FBF6F7;border:1px solid #EFDDE2;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="align-self:flex-end;max-width:80%;background:#C15A76;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.86rem;line-height:1.4">Was kann ich mit Kartoffeln kochen?</div>
+<div style="background:#fff;border:1px solid #EFDDE2;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.86rem;line-height:1.45;color:#2C2126;max-width:92%">Zwei passen gut — beide sind kochbereit:</div>
+<div style="background:#fff;border:1px solid #EFDDE2;border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start">
+<div style="width:38px;height:38px;border-radius:12px;background:#FAE3E9;color:#9E3F5A;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">O</div>
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:0.98rem;color:#2C2126;line-height:1.2">Ofengemüse mit Feta</div>
+<div style="font-size:0.7rem;color:#8E7C82;margin-top:2px">Hauptgericht · 9 Zutaten</div>
+<div style="font-size:0.72rem;color:#2C2126;margin-top:4px">Kartoffeln, Zucchini, Paprika, Feta …</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="2c">
+<div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a><span class="dv-oname">Himmel &amp; Sand</span> — kühles Hellblau, Sand als warmer Gegenpol</div>
+<div class="dv-card">
+<div class="phone-col">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#F6F8FB">
+<div style="flex:1;overflow:auto;padding:58px 20px 16px">
+<div style="margin-bottom:16px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#2C6288;margin-bottom:4px">Familienküche</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;color:#1F2933;line-height:1.15">Was koche ich heute?</div>
+</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:2px">
+<div style="background:#3D7EA6;color:#fff;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:600;white-space:nowrap;flex-shrink:0">Alle</div>
+<div style="background:#EAF0F7;color:#1F2933;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #DCE6EF;flex-shrink:0">Hauptgericht</div>
+<div style="background:#EAF0F7;color:#1F2933;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #DCE6EF;flex-shrink:0">Suppe</div>
+<div style="background:#EAF0F7;color:#1F2933;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #DCE6EF;flex-shrink:0">Salat</div>
+</div>
+<div style="background:linear-gradient(135deg,#E1EDF6 0%,#F6EEE2 100%);border:1px solid #DCE6EF;border-radius:26px;padding:22px 20px;margin-bottom:18px;display:flex;flex-direction:column;align-items:center;gap:14px">
+<sc-if value="{{ aIdle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ rollA }}" style="width:92px;height:92px;border-radius:28px;background:linear-gradient(135deg,#3D7EA6,#2C6288);border:none;box-shadow:0 8px 20px rgba(44,98,136,0.28);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:40px">🎲</button>
+</sc-if>
+<sc-if value="{{ aRolling }}" hint-placeholder-val="{{ false }}">
+<div style="width:92px;height:92px;border-radius:28px;background:linear-gradient(135deg,#3D7EA6,#2C6288);box-shadow:0 8px 20px rgba(44,98,136,0.28);display:flex;align-items:center;justify-content:center;font-size:40px;animation:diceSpin 0.85s ease-in-out">🎲</div>
+</sc-if>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1rem;color:#1F2933">Würfeln</div>
+<div style="text-align:center;font-size:0.76rem;color:#7C8794;line-height:1.5;max-width:250px">Der Würfel zieht aus <b style="color:#1F2933">18 Hauptgerichten, Suppen &amp; Salaten</b> — Nachspeisen und Eingemachtes bleiben außen vor.</div>
+</div>
+<sc-if value="{{ aRevealed }}" hint-placeholder-val="{{ true }}">
+<div style="background:#FFFFFF;border:1px solid #DCE6EF;border-radius:24px;overflow:hidden;box-shadow:0 6px 20px rgba(31,41,51,0.07);animation:cardFlipIn 0.5s ease">
+<div style="background:#EAF0F7;border-bottom:1px solid #DCE6EF;padding:16px 18px 18px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+<span style="background:#F6EEE2;color:#8A6636;padding:4px 12px;border-radius:999px;font-size:0.7rem;font-weight:600">{{ aRecipe.kategorie }}</span>
+<span style="font-size:0.72rem;color:#7C8794">{{ aRecipe.zeit }} · {{ aRecipe.portionen }}</span>
+</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.55rem;line-height:1.15;color:#1F2933">{{ aRecipe.titel }}</div>
+</div>
+<div style="padding:16px 18px 18px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#7C8794;margin-bottom:8px">{{ aRecipe.zutatenZahl }} Zutaten</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+<sc-for list="{{ aRecipe.zutaten }}" as="z" hint-placeholder-count="3">
+<span style="background:#F6F8FB;border:1px solid #DCE6EF;color:#1F2933;padding:5px 11px;border-radius:999px;font-size:0.76rem">{{ z }}</span>
+</sc-for>
+<span style="color:#7C8794;padding:5px 4px;font-size:0.76rem">{{ aRecipe.zutatenRest }}</span>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#F6F8FB;border:1px solid #DCE6EF;border-radius:18px;padding:10px 12px 10px 14px;margin-bottom:12px">
+<div>
+<div style="font-size:0.82rem;font-weight:600;color:#1F2933">Personen</div>
+<div style="font-size:0.68rem;color:#7C8794">Original: {{ aRecipe.portionen }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ personenAMinus }}" style="width:44px;height:44px;border-radius:14px;background:#EAF0F7;border:1px solid #DCE6EF;color:#1F2933;font-size:1.25rem;line-height:1;cursor:pointer">−</button>
+<div style="min-width:34px;text-align:center;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.3rem;color:#1F2933">{{ personenA }}</div>
+<button onClick="{{ personenAPlus }}" style="width:44px;height:44px;border-radius:14px;background:#E1EDF6;border:1px solid #C9DEED;color:#2C6288;font-size:1.25rem;line-height:1;cursor:pointer">+</button>
+</div>
+</div>
+<div style="display:flex;gap:8px">
+<button style="flex:1;background:#3D7EA6;color:#fff;border:none;border-radius:999px;padding:11px;font-weight:600;font-size:0.88rem;cursor:pointer">Mengen berechnen</button>
+<button onClick="{{ rollA }}" style="background:#F6EEE2;color:#8A6636;border:1px solid #EADFC9;border-radius:999px;padding:11px 16px;font-weight:600;font-size:0.88rem;cursor:pointer">↻</button>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="display:flex;border-top:1px solid #DCE6EF;background:#FFFFFF;padding:10px 24px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">🎲</div>
+<div style="font-size:0.72rem;font-weight:600;color:#2C6288">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#7C8794">Fragen</div>
+</div>
+</div>
+</div>
+</x-import>
+<div style="width:402px;box-sizing:border-box;background:#F6F8FB;border:1px solid #DCE6EF;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="align-self:flex-end;max-width:80%;background:#3D7EA6;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.86rem;line-height:1.4">Was kann ich mit Kartoffeln kochen?</div>
+<div style="background:#fff;border:1px solid #DCE6EF;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.86rem;line-height:1.45;color:#1F2933;max-width:92%">Zwei passen gut — beide sind kochbereit:</div>
+<div style="background:#fff;border:1px solid #DCE6EF;border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start">
+<div style="width:38px;height:38px;border-radius:12px;background:#E1EDF6;color:#2C6288;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">O</div>
+<div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:0.98rem;color:#1F2933;line-height:1.2">Ofengemüse mit Feta</div>
+<div style="font-size:0.7rem;color:#7C8794;margin-top:2px">Hauptgericht · 9 Zutaten</div>
+<div style="font-size:0.72rem;color:#1F2933;margin-top:4px">Kartoffeln, Zucchini, Paprika, Feta …</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Weiter geht's z.B. mit: "<a class="dv-oid" href="#2a">2a</a> ins Streamlit-Theme übernehmen" · "<a class="dv-oid" href="#2b">2b</a> mit den Buttons aus <a class="dv-oid" href="#2c">2c</a>" · "noch eine wärmere Variante"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Feinschliff: Rezept würfeln &amp; Chatfenster — textbasiert, ohne Fotos</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a><span class="dv-oname">Warm Editorial</span> — Titel als Typo-Karte, Zutaten als Vorschau, sanfter Flip</div>
+<div class="dv-card">
+<div class="phones-row">
+
+<div class="phone-col">
+<div class="phone-lbl">Würfeln</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF7F0">
+<div style="flex:1;overflow:auto;padding:58px 20px 16px">
+<div style="margin-bottom:16px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#C4592A;margin-bottom:4px">Familienküche</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;color:#2A2320;line-height:1.15">Was koche ich heute?</div>
+</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:2px">
+<div style="background:#E2703A;color:#fff;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:600;white-space:nowrap;flex-shrink:0">Alle</div>
+<div style="background:#F4EDE3;color:#2A2320;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #EADFD1;flex-shrink:0">Hauptgericht</div>
+<div style="background:#F4EDE3;color:#2A2320;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #EADFD1;flex-shrink:0">Suppe</div>
+<div style="background:#F4EDE3;color:#2A2320;padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:500;white-space:nowrap;border:1px solid #EADFD1;flex-shrink:0">Salat</div>
+</div>
+<div style="background:linear-gradient(135deg,#FBE7DA 0%,#F4EDE3 100%);border:1px solid #EADFD1;border-radius:26px;padding:22px 20px;margin-bottom:18px;display:flex;flex-direction:column;align-items:center;gap:14px">
+<sc-if value="{{ aIdle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ rollA }}" style="width:92px;height:92px;border-radius:28px;background:linear-gradient(135deg,#E2703A,#C4592A);border:none;box-shadow:0 8px 20px rgba(196,89,42,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:40px">🎲</button>
+</sc-if>
+<sc-if value="{{ aRolling }}" hint-placeholder-val="{{ false }}">
+<div style="width:92px;height:92px;border-radius:28px;background:linear-gradient(135deg,#E2703A,#C4592A);box-shadow:0 8px 20px rgba(196,89,42,0.35);display:flex;align-items:center;justify-content:center;font-size:40px;animation:diceSpin 0.85s ease-in-out">🎲</div>
+</sc-if>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1rem;color:#2A2320">Würfeln</div>
+<div style="text-align:center;font-size:0.76rem;color:#8A7E75;line-height:1.5;max-width:250px">Der Würfel zieht aus <b style="color:#2A2320">18 Hauptgerichten, Suppen &amp; Salaten</b> — Nachspeisen und Eingemachtes bleiben außen vor.</div>
+</div>
+<sc-if value="{{ aRevealed }}" hint-placeholder-val="{{ true }}">
+<div style="background:#FFFFFF;border:1px solid #EADFD1;border-radius:24px;overflow:hidden;box-shadow:0 6px 20px rgba(42,35,32,0.08);animation:cardFlipIn 0.5s ease">
+<div style="background:#F4EDE3;border-bottom:1px solid #EADFD1;padding:16px 18px 18px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+<span style="background:#FBE7DA;color:#C4592A;padding:4px 12px;border-radius:999px;font-size:0.7rem;font-weight:600">{{ aRecipe.kategorie }}</span>
+<span style="font-size:0.72rem;color:#8A7E75">{{ aRecipe.zeit }} · {{ aRecipe.portionen }}</span>
+</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.55rem;line-height:1.15;color:#2A2320">{{ aRecipe.titel }}</div>
+</div>
+<div style="padding:16px 18px 18px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8A7E75;margin-bottom:8px">{{ aRecipe.zutatenZahl }} Zutaten</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+<sc-for list="{{ aRecipe.zutaten }}" as="z" hint-placeholder-count="3">
+<span style="background:#FBF7F0;border:1px solid #EADFD1;color:#2A2320;padding:5px 11px;border-radius:999px;font-size:0.76rem">{{ z }}</span>
+</sc-for>
+<span style="color:#8A7E75;padding:5px 4px;font-size:0.76rem">{{ aRecipe.zutatenRest }}</span>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#FBF7F0;border:1px solid #EADFD1;border-radius:18px;padding:10px 12px 10px 14px;margin-bottom:12px">
+<div>
+<div style="font-size:0.82rem;font-weight:600;color:#2A2320">Personen</div>
+<div style="font-size:0.68rem;color:#8A7E75">Original: {{ aRecipe.portionen }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ personenAMinus }}" style="width:44px;height:44px;border-radius:14px;background:#F4EDE3;border:1px solid #EADFD1;color:#2A2320;font-size:1.25rem;line-height:1;cursor:pointer">−</button>
+<div style="min-width:34px;text-align:center;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.3rem;color:#2A2320">{{ personenA }}</div>
+<button onClick="{{ personenAPlus }}" style="width:44px;height:44px;border-radius:14px;background:#FBE7DA;border:1px solid #F3D3BE;color:#C4592A;font-size:1.25rem;line-height:1;cursor:pointer">+</button>
+</div>
+</div>
+<div style="display:flex;gap:8px">
+<button style="flex:1;background:#E2703A;color:#fff;border:none;border-radius:999px;padding:11px;font-weight:600;font-size:0.88rem;cursor:pointer">Mengen berechnen</button>
+<button onClick="{{ rollA }}" style="background:#F4EDE3;color:#2A2320;border:1px solid #EADFD1;border-radius:999px;padding:11px 16px;font-weight:600;font-size:0.88rem;cursor:pointer">↻</button>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="display:flex;border-top:1px solid #EADFD1;background:#FFFFFF;padding:10px 24px 20px;flex-shrink:0">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">🍲</div>
+<div style="font-size:0.72rem;font-weight:600;color:#C4592A">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">💬</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8A7E75">Fragen</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+<div class="phone-col">
+<div class="phone-lbl">Fragen · Chat</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FBF7F0">
+<div style="flex:1;overflow:auto;padding:58px 20px 12px">
+<div style="margin-bottom:16px">
+<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#C4592A;margin-bottom:4px">Küchen-Assistent</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.6rem;color:#2A2320">Frag die Sammlung</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+<div style="align-self:flex-end;max-width:80%;background:#E2703A;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.88rem;line-height:1.4">Was kann ich mit Kartoffeln und Zwiebeln kochen?</div>
+<div style="align-self:flex-start;max-width:94%;display:flex;flex-direction:column;gap:10px">
+<div style="background:#fff;border:1px solid #EADFD1;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.88rem;line-height:1.45;color:#2A2320">Zwei passen gut — beide sind kochbereit:</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="background:#fff;border:1px solid #EADFD1;border-radius:16px;padding:12px 14px;box-shadow:0 2px 8px rgba(42,35,32,0.05);display:flex;gap:12px;align-items:flex-start">
+<div style="width:38px;height:38px;border-radius:12px;background:#FBE7DA;color:#C4592A;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">O</div>
+<div style="min-width:0">
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:0.98rem;color:#2A2320;line-height:1.2;margin-bottom:3px">Ofengemüse mit Feta</div>
+<div style="font-size:0.7rem;color:#8A7E75">Hauptgericht · 40 Min · 9 Zutaten</div>
+<div style="font-size:0.72rem;color:#2A2320;margin-top:4px">Kartoffeln, Zwiebeln, Zucchini, Feta …</div>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #EADFD1;border-radius:16px;padding:12px 14px;box-shadow:0 2px 8px rgba(42,35,32,0.05);display:flex;gap:12px;align-items:flex-start">
+<div style="width:38px;height:38px;border-radius:12px;background:#E2EDE5;color:#3F6C51;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">K</div>
+<div style="min-width:0">
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:0.98rem;color:#2A2320;line-height:1.2;margin-bottom:3px">Kartoffel-Lauch-Suppe</div>
+<div style="font-size:0.7rem;color:#8A7E75">Suppe · 35 Min · 7 Zutaten</div>
+<div style="font-size:0.72rem;color:#2A2320;margin-top:4px">Kartoffeln, Zwiebeln, Lauch, Brühe …</div>
+</div>
+</div>
+</div>
+</div>
+<div style="align-self:flex-end;max-width:80%;background:#E2703A;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.88rem;line-height:1.4">Welche ist schneller fertig?</div>
+<div style="align-self:flex-start;max-width:88%;background:#fff;border:1px solid #EADFD1;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.88rem;line-height:1.45;color:#2A2320">Die Suppe — 35 statt 40 Minuten, und sie lässt sich gut vorbereiten.</div>
+</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:10px">
+<div style="background:#F4EDE3;border:1px solid #EADFD1;color:#2A2320;padding:7px 14px;border-radius:999px;font-size:0.78rem;white-space:nowrap;flex-shrink:0">Vegetarische Rezepte?</div>
+<div style="background:#F4EDE3;border:1px solid #EADFD1;color:#2A2320;padding:7px 14px;border-radius:999px;font-size:0.78rem;white-space:nowrap;flex-shrink:0">12 Gäste, was skaliert gut?</div>
+</div>
+<div style="font-size:0.72rem;color:#8A7E75;text-align:center;margin-bottom:8px">Noch 21 Fragen in dieser Sitzung</div>
+</div>
+<div style="padding:0 20px 16px;flex-shrink:0">
+<div style="display:flex;align-items:center;gap:8px;background:#F4EDE3;border:1px solid #EADFD1;border-radius:999px;padding:6px 6px 6px 16px;margin-bottom:12px">
+<div style="flex:1;font-size:0.84rem;color:#8A7E75">Frag mich etwas über eure Rezepte …</div>
+<div style="width:34px;height:34px;border-radius:50%;background:#E2703A;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.95rem;flex-shrink:0">➤</div>
+</div>
+<div style="display:flex;border-top:1px solid #EADFD1;padding-top:10px">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem;opacity:0.4">🍲</div>
+<div style="font-size:0.72rem;font-weight:500;color:#8A7E75">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:1.15rem">💬</div>
+<div style="font-size:0.72rem;font-weight:600;color:#C4592A">Fragen</div>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a><span class="dv-oname">Bold Playful</span> — Farbfläche statt Foto, verspielter Dice-Bounce, schwebende Nav</div>
+<div class="dv-card">
+<div class="phones-row">
+
+<div class="phone-col">
+<div class="phone-lbl">Würfeln</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FFF9F2">
+<div style="flex:1;overflow:auto;padding:58px 20px 16px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+<div>
+<div style="font-size:0.85rem;color:#9B8F86;margin-bottom:2px">Guten Abend</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.5rem;color:#201A16">Was koche ich heute?</div>
+</div>
+<div style="width:42px;height:42px;border-radius:16px;background:#FFEADD;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍲</div>
+</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:2px">
+<div style="background:#201A16;color:#fff;padding:9px 16px;border-radius:14px;font-size:0.8rem;font-weight:600;white-space:nowrap;flex-shrink:0">Alle</div>
+<div style="background:#FFEADD;color:#E0501F;padding:9px 16px;border-radius:14px;font-size:0.8rem;font-weight:600;white-space:nowrap;flex-shrink:0">Hauptgericht</div>
+<div style="background:#FFF3CF;color:#8A6A00;padding:9px 16px;border-radius:14px;font-size:0.8rem;font-weight:600;white-space:nowrap;flex-shrink:0">Suppe</div>
+<div style="background:#E7EFE3;color:#2F5233;padding:9px 16px;border-radius:14px;font-size:0.8rem;font-weight:600;white-space:nowrap;flex-shrink:0">Salat</div>
+</div>
+<div style="background:linear-gradient(160deg,#FF6A3D 0%,#F2B705 130%);border-radius:32px;padding:24px 20px 20px;margin-bottom:16px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 12px 28px rgba(255,106,61,0.3)">
+<sc-if value="{{ bIdle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ rollB }}" style="width:88px;height:88px;border-radius:24px;background:#fff;border:none;box-shadow:0 8px 18px rgba(32,26,22,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:38px">🎲</button>
+</sc-if>
+<sc-if value="{{ bRolling }}" hint-placeholder-val="{{ false }}">
+<div style="width:88px;height:88px;border-radius:24px;background:#fff;box-shadow:0 8px 18px rgba(32,26,22,0.2);display:flex;align-items:center;justify-content:center;font-size:38px;animation:diceBounce 0.85s ease-in-out">🎲</div>
+</sc-if>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1rem;color:#fff">Würfeln</div>
+<div style="background:rgba(255,255,255,0.24);border-radius:12px;padding:8px 14px;text-align:center;font-size:0.72rem;color:#fff;line-height:1.5;max-width:240px">Zieht aus 18 Hauptgerichten, Suppen &amp; Salaten — Nachspeisen bleiben außen vor.</div>
+</div>
+<sc-if value="{{ bRevealed }}" hint-placeholder-val="{{ true }}">
+<div style="background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 10px 26px rgba(32,26,22,0.14);animation:cardFlipIn 0.5s ease">
+<div style="background:#201A16;padding:18px 18px 20px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+<span style="background:#FF6A3D;color:#fff;padding:4px 11px;border-radius:9px;font-size:0.68rem;font-weight:700">{{ bRecipe.kategorie }}</span>
+<span style="color:rgba(255,255,255,0.6);font-size:0.72rem;font-weight:500">{{ bRecipe.zeit }} · {{ bRecipe.portionen }}</span>
+</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.7rem;line-height:1.1;color:#fff">{{ bRecipe.titel }}</div>
+</div>
+<div style="padding:16px 18px 18px">
+<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9B8F86;margin-bottom:8px">{{ bRecipe.zutatenZahl }} Zutaten</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+<sc-for list="{{ bRecipe.zutaten }}" as="z" hint-placeholder-count="3">
+<span style="background:#FFF3EC;color:#201A16;padding:6px 12px;border-radius:10px;font-size:0.76rem;font-weight:500">{{ z }}</span>
+</sc-for>
+<span style="color:#9B8F86;padding:6px 4px;font-size:0.76rem">{{ bRecipe.zutatenRest }}</span>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#FFF3EC;border-radius:18px;padding:10px 12px 10px 14px;margin-bottom:12px">
+<div>
+<div style="font-size:0.82rem;font-weight:700;color:#201A16">Personen</div>
+<div style="font-size:0.68rem;color:#9B8F86">Original: {{ bRecipe.portionen }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ personenBMinus }}" style="width:44px;height:44px;border-radius:14px;background:#fff;border:1px solid #F0E3D6;color:#201A16;font-size:1.25rem;line-height:1;cursor:pointer">−</button>
+<div style="min-width:34px;text-align:center;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.3rem;color:#201A16">{{ personenB }}</div>
+<button onClick="{{ personenBPlus }}" style="width:44px;height:44px;border-radius:14px;background:#FF6A3D;border:none;color:#fff;font-size:1.25rem;line-height:1;cursor:pointer">+</button>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<button style="background:#201A16;color:#fff;border:none;border-radius:16px;padding:13px;font-weight:600;font-size:0.88rem;cursor:pointer">Mengen berechnen</button>
+<button onClick="{{ rollB }}" style="background:#FFEADD;color:#E0501F;border:none;border-radius:16px;padding:12px;font-weight:600;font-size:0.88rem;cursor:pointer">🎲 Nochmal würfeln</button>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="padding:0 16px 18px;flex-shrink:0">
+<div style="display:flex;background:#201A16;border-radius:24px;padding:8px;box-shadow:0 10px 24px rgba(32,26,22,0.3)">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:#FF6A3D;border-radius:16px;padding:8px 0">
+<div style="font-size:1.05rem">🍲</div>
+<div style="font-size:0.64rem;font-weight:600;color:#fff">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0">
+<div style="font-size:1.05rem;opacity:0.5">💬</div>
+<div style="font-size:0.64rem;font-weight:500;color:rgba(255,255,255,0.5)">Fragen</div>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+<div class="phone-col">
+<div class="phone-lbl">Fragen · Chat</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#FFF9F2">
+<div style="flex:1;overflow:auto;padding:58px 20px 12px">
+<div style="margin-bottom:16px">
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.5rem;color:#201A16">Frag die Sammlung</div>
+<div style="font-size:0.8rem;color:#9B8F86;margin-top:2px">Claude kennt 42 Rezepte</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+<div style="align-self:flex-end;max-width:80%;background:#201A16;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.88rem;line-height:1.4">Was kann ich mit Kartoffeln und Zwiebeln kochen?</div>
+<div style="align-self:flex-start;max-width:96%;display:flex;flex-direction:column;gap:10px">
+<div style="background:#fff;border:1px solid #F0E3D6;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.88rem;line-height:1.45;color:#201A16">Zwei passen gut — beide sind kochbereit:</div>
+<div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:2px">
+<div style="flex-shrink:0;width:168px;background:#fff;border:1px solid #F0E3D6;border-radius:18px;padding:14px;box-shadow:0 4px 12px rgba(32,26,22,0.07)">
+<div style="background:#FFEADD;color:#E0501F;display:inline-block;padding:3px 9px;border-radius:8px;font-size:0.62rem;font-weight:700;margin-bottom:8px">Hauptgericht</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.02rem;color:#201A16;line-height:1.2;margin-bottom:6px">Ofengemüse mit Feta</div>
+<div style="font-size:0.7rem;color:#9B8F86;margin-bottom:6px">40 Min · 9 Zutaten</div>
+<div style="font-size:0.72rem;color:#201A16;line-height:1.4">Kartoffeln, Zwiebeln, Zucchini, Feta …</div>
+</div>
+<div style="flex-shrink:0;width:168px;background:#fff;border:1px solid #F0E3D6;border-radius:18px;padding:14px;box-shadow:0 4px 12px rgba(32,26,22,0.07)">
+<div style="background:#FFF3CF;color:#8A6A00;display:inline-block;padding:3px 9px;border-radius:8px;font-size:0.62rem;font-weight:700;margin-bottom:8px">Suppe</div>
+<div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.02rem;color:#201A16;line-height:1.2;margin-bottom:6px">Kartoffel-Lauch-Suppe</div>
+<div style="font-size:0.7rem;color:#9B8F86;margin-bottom:6px">35 Min · 7 Zutaten</div>
+<div style="font-size:0.72rem;color:#201A16;line-height:1.4">Kartoffeln, Zwiebeln, Lauch, Brühe …</div>
+</div>
+</div>
+</div>
+<div style="align-self:flex-end;max-width:80%;background:#201A16;color:#fff;padding:11px 15px;border-radius:18px 18px 4px 18px;font-size:0.88rem;line-height:1.4">Welche ist schneller fertig?</div>
+<div style="align-self:flex-start;max-width:88%;background:#fff;border:1px solid #F0E3D6;padding:11px 15px;border-radius:18px 18px 18px 4px;font-size:0.88rem;line-height:1.45;color:#201A16">Die Suppe — 35 statt 40 Minuten, und sie lässt sich gut vorbereiten.</div>
+</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:10px">
+<div style="background:#FFEADD;color:#E0501F;padding:7px 14px;border-radius:999px;font-size:0.78rem;font-weight:600;white-space:nowrap;flex-shrink:0">Vegetarische Rezepte?</div>
+<div style="background:#E7EFE3;color:#2F5233;padding:7px 14px;border-radius:999px;font-size:0.78rem;font-weight:600;white-space:nowrap;flex-shrink:0">12 Gäste, was skaliert gut?</div>
+</div>
+<div style="font-size:0.72rem;color:#9B8F86;text-align:center;margin-bottom:8px">Noch 21 Fragen in dieser Sitzung</div>
+</div>
+<div style="padding:0 16px 18px;flex-shrink:0">
+<div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #F0E3D6;border-radius:20px;padding:6px 6px 6px 16px;margin-bottom:12px;box-shadow:0 4px 12px rgba(32,26,22,0.06)">
+<div style="flex:1;font-size:0.84rem;color:#9B8F86">Frag mich etwas über eure Rezepte …</div>
+<div style="width:34px;height:34px;border-radius:12px;background:#FF6A3D;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.95rem;flex-shrink:0">➤</div>
+</div>
+<div style="display:flex;background:#201A16;border-radius:24px;padding:8px;box-shadow:0 10px 24px rgba(32,26,22,0.3)">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0">
+<div style="font-size:1.05rem;opacity:0.5">🍲</div>
+<div style="font-size:0.64rem;font-weight:500;color:rgba(255,255,255,0.5)">Würfeln</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:#FF6A3D;border-radius:16px;padding:8px 0">
+<div style="font-size:1.05rem">💬</div>
+<div style="font-size:0.64rem;font-weight:600;color:#fff">Fragen</div>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+</div>
+
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Weiter geht's z.B. mit: "Würfel-Karte aus <a class="dv-oid" href="#1a">1a</a> mit der Nav aus <a class="dv-oid" href="#1b">1b</a>" · "Zutaten-Vorschau durch erste Kochschritte ersetzen" · "Desktop-Ansicht dazu"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  recipes = [
+    { titel: "Kartoffel-Lauch-Suppe", kategorie: "Suppe", zeit: "35 Min", portionen: "4 Port.", zutatenZahl: 7, zutaten: ["Kartoffeln", "Lauch", "Zwiebeln", "Brühe"] },
+    { titel: "Ofengemüse mit Feta", kategorie: "Hauptgericht", zeit: "40 Min", portionen: "3 Port.", zutatenZahl: 9, zutaten: ["Kartoffeln", "Zucchini", "Paprika", "Feta"] },
+    { titel: "Linsen-Bolognese", kategorie: "Hauptgericht", zeit: "45 Min", portionen: "4 Port.", zutatenZahl: 11, zutaten: ["Belugalinsen", "Passierte Tomaten", "Karotten", "Sellerie"] },
+    { titel: "Rucola-Birnen-Salat", kategorie: "Salat", zeit: "15 Min", portionen: "2 Port.", zutatenZahl: 6, zutaten: ["Rucola", "Birne", "Walnüsse", "Parmesan"] },
+    { titel: "Kürbisrisotto", kategorie: "Hauptgericht", zeit: "50 Min", portionen: "4 Port.", zutatenZahl: 10, zutaten: ["Hokkaido", "Risottoreis", "Weißwein", "Parmesan"] },
+    { titel: "Griechischer Salat", kategorie: "Salat", zeit: "20 Min", portionen: "3 Port.", zutatenZahl: 8, zutaten: ["Tomaten", "Gurke", "Oliven", "Feta"] },
+  ];
+
+  state = {
+    diceA: { rolling: false, revealed: true, index: 2 },
+    diceB: { rolling: false, revealed: true, index: 4 },
+    personenA: 7,
+    personenB: 7,
+    retry: false,
+    runStep: 0,
+    frageText: "",
+    letzteFrage: "",
+    diceC: { rolling: false, revealed: false, index: 2 },
+    personenC: 7,
+  };
+
+  // Ofengemuese mit Feta, Basis 4 Portionen
+  basisZutaten = [
+    { name: "Kartoffeln", menge: 800, einheit: "g" },
+    { name: "Zucchini", menge: 2, einheit: "" },
+    { name: "Paprika", menge: 2, einheit: "" },
+    { name: "Feta", menge: 200, einheit: "g" },
+    { name: "Olivenöl", menge: 3, einheit: "EL" },
+    { name: "Zitrone", menge: 1, einheit: "" },
+  ];
+
+  zahl(n) {
+    const gerundet = n >= 100 ? Math.round(n / 10) * 10 : Math.round(n * 2) / 2;
+    return String(gerundet).replace(".", ",");
+  }
+
+  mengen() {
+    const f = this.state.personenC / 4;
+    return this.basisZutaten.map(z => ({
+      name: z.name,
+      menge: (this.zahl(z.menge * f) + " " + z.einheit).trim(),
+    }));
+  }
+
+  chipGruppen = {
+    chipsVorrat: [
+      "Was kann ich mit Kartoffeln und Zwiebeln kochen?",
+      "Welche Rezepte sind vegetarisch?",
+      "Wofür brauche ich Hefe?",
+    ],
+    chipsGaeste: [
+      "Ich habe 12 Gäste — was skaliert gut?",
+      "Was kann ich vorbereiten?",
+    ],
+    chipsSchnell: [
+      "Welches Rezept braucht die wenigsten Zutaten?",
+      "Was ist in 30 Minuten fertig?",
+    ],
+  };
+
+  chips(key) {
+    return this.chipGruppen[key].map(label => ({
+      label,
+      pick: () => this.setState({ frageText: label }),
+    }));
+  }
+
+  sendFrage() {
+    const text = this.state.frageText.trim();
+    if (!text) return;
+    this.setState({ letzteFrage: text, frageText: "" });
+  }
+
+  queueBasis = [
+    { titel: "Linsensuppe mit Ingwer", quelle: "Weblink" },
+    { titel: "Omas Zwetschgenkuchen", quelle: "Foto" },
+    { titel: "Bohnensalat", quelle: "manueller Text" },
+    { titel: "Grießbrei", quelle: "Weblink" },
+    { titel: "Kartoffelgratin", quelle: "Weblink" },
+    { titel: "Apfelkompott", quelle: "Foto" },
+  ];
+
+  startRun() {
+    if (this.state.runStep > 0) return;
+    const gesamt = this.state.retry ? 9 : 6;
+    const tick = () => this.setState(s => {
+      const next = s.runStep + 1;
+      if (next > gesamt) { setTimeout(() => this.setState({ runStep: 0 }), 900); return { runStep: gesamt }; }
+      setTimeout(tick, 550);
+      return { runStep: next };
+    });
+    tick();
+  }
+
+  setPersonen(key, delta) {
+    this.setState(s => ({ [key]: Math.min(30, Math.max(1, s[key] + delta)) }));
+  }
+
+  roll(key) {
+    if (this.state[key].rolling) return;
+    this.setState({ [key]: { ...this.state[key], rolling: true, revealed: false } });
+    setTimeout(() => {
+      let idx = Math.floor(Math.random() * this.recipes.length);
+      if (idx === this.state[key].index) idx = (idx + 1) % this.recipes.length;
+      this.setState({ [key]: { rolling: false, revealed: true, index: idx } });
+    }, 850);
+  }
+
+  view(r) {
+    const rest = r.zutatenZahl - r.zutaten.length;
+    return { ...r, zutatenRest: rest > 0 ? "+ " + rest + " weitere" : "" };
+  }
+
+  renderVals() {
+    const a = this.state.diceA, b = this.state.diceB;
+    const gesamt = this.state.retry ? 9 : 6;
+    const step = this.state.runStep;
+    const aktuell = this.queueBasis[Math.min(step, this.queueBasis.length) - 1];
+    return {
+      cRolling: this.state.diceC.rolling,
+      cIdle: !this.state.diceC.rolling,
+      rollC: () => this.roll("diceC"),
+      personenC: this.state.personenC,
+      personenCPlus: () => this.setPersonen("personenC", 1),
+      personenCMinus: () => this.setPersonen("personenC", -1),
+      faktorC: (this.state.personenC / 4).toFixed(2).replace(".", ","),
+      mengenC: this.mengen(),
+      frageText: this.state.frageText,
+      onFrage: ev => this.setState({ frageText: ev.target.value }),
+      sendFrage: () => this.sendFrage(),
+      frageGesendet: !!this.state.letzteFrage,
+      letzteFrage: this.state.letzteFrage,
+      chipsVorrat: this.chips("chipsVorrat"),
+      chipsGaeste: this.chips("chipsGaeste"),
+      chipsSchnell: this.chips("chipsSchnell"),
+      queue: this.queueBasis,
+      queueCount: gesamt,
+      retryOn: this.state.retry,
+      retryOff: !this.state.retry,
+      toggleRetry: () => this.setState(s => ({ retry: !s.retry })),
+      runIdle: step === 0,
+      running: step > 0,
+      startRun: () => this.startRun(),
+      progressPct: Math.round((step / gesamt) * 100) + "%",
+      runLabel: step >= gesamt
+        ? gesamt + " von " + gesamt + " verarbeitet"
+        : (aktuell ? aktuell.titel : "Starte …") + " (" + step + "/" + gesamt + ")",
+      rollA: () => this.roll("diceA"),
+      rollB: () => this.roll("diceB"),
+      personenA: this.state.personenA,
+      personenB: this.state.personenB,
+      personenAPlus: () => this.setPersonen("personenA", 1),
+      personenAMinus: () => this.setPersonen("personenA", -1),
+      personenBPlus: () => this.setPersonen("personenB", 1),
+      personenBMinus: () => this.setPersonen("personenB", -1),
+      aRolling: a.rolling,
+      aIdle: !a.rolling,
+      aRevealed: a.revealed,
+      aRecipe: this.view(this.recipes[a.index]),
+      bRolling: b.rolling,
+      bIdle: !b.rolling,
+      bRevealed: b.revealed,
+      bRecipe: this.view(this.recipes[b.index]),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

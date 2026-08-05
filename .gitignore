@@ -1,0 +1,11 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.streamlit/secrets.toml
+.DS_Store
+
+# lokale Claude-Code-Berechtigungen (maschinenspezifisch)
+.claude/settings.local.json
