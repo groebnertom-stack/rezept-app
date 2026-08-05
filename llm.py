@@ -148,7 +148,7 @@ def chat_antwort(
     frage: str,
     rezepte: Iterable[Rezept],
     verlauf: Optional[list[dict[str, str]]] = None,
-    max_tokens: int = 1200,
+    max_tokens: int = 4000,
 ) -> str:
     """Beantwortet eine Freitextfrage auf Basis der Rezeptsammlung."""
     rezepte = list(rezepte)
@@ -164,17 +164,32 @@ def chat_antwort(
     for eintrag in (verlauf or [])[-8:]:  # letzte vier Runden reichen als Gedaechtnis
         nachrichten.append({"role": eintrag["role"], "content": eintrag["content"]})
 
-    nachrichten.append(
-        {
-            "role": "user",
-            "content": f"<rezeptsammlung>\n{kontext}\n</rezeptsammlung>\n\nFrage: {frage}",
-        }
-    )
+    nachrichten.append({"role": "user", "content": f"Frage: {frage}"})
 
+    # Die Sammlung steht im System-Prompt, nicht in der User-Nachricht: gecacht
+    # wird immer der Prefix (system vor messages), und der bleibt nur stabil,
+    # wenn nichts Variables davor steht. Lag die Sammlung hinter dem
+    # Gespraechsverlauf, aenderte sich der Prefix mit jeder Runde und der Cache
+    # koennte prinzipiell nie greifen -- bei ~34.000 Token pro Frage teuer.
+    # Cache-Treffer kosten rund ein Zehntel; jeder Treffer verlaengert die
+    # Lebensdauer des Eintrags, sodass ein Gespraech durchgehend billig bleibt.
+    # max_tokens deckt Denken UND Antwort ab: Sonnet 5 denkt von sich aus mit,
+    # und bei den frueheren 1200 Token blieb fuer die Antwort so wenig uebrig,
+    # dass sie mitten im Satz abbrach. effort "low" passt zur Aufgabe -- die
+    # Regeln stehen im System-Prompt, gesucht wird in fertigen Daten -- und
+    # halbiert nebenbei die Wartezeit.
     antwort = _client().messages.create(
         model=MODELL,
         max_tokens=max_tokens,
-        system=CHAT_SYSTEM,
+        output_config={"effort": "low"},
+        system=[
+            {"type": "text", "text": CHAT_SYSTEM},
+            {
+                "type": "text",
+                "text": f"<rezeptsammlung>\n{kontext}\n</rezeptsammlung>",
+                "cache_control": {"type": "ephemeral"},
+            },
+        ],
         messages=nachrichten,
     )
     return "".join(block.text for block in antwort.content if block.type == "text").strip()

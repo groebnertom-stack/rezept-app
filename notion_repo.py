@@ -10,8 +10,9 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
+import httpx
 from notion_client import Client
-from notion_client.errors import APIResponseError
+from notion_client.errors import APIResponseError, HTTPResponseError, RequestTimeoutError
 
 from models import (
     STATUS_ERROR,
@@ -31,8 +32,35 @@ PROP_ZUTATEN = "Zutaten (strukturiert)"
 PROP_STATUS = "Status"
 
 
-class NotionKonfigurationsFehler(RuntimeError):
+class NotionFehler(RuntimeError):
+    """Basis fuer alles, was die App dem Nutzer als Notion-Problem zeigen soll."""
+
+
+class NotionKonfigurationsFehler(NotionFehler):
     """Token oder Datenbank-ID fehlen bzw. sind nicht erreichbar."""
+
+
+class NotionVerbindungsFehler(NotionFehler):
+    """Notion war kurzzeitig nicht erreichbar: Timeout, Abbruch, Serverfehler.
+
+    Getrennt von der Konfiguration, weil hier ein erneuter Versuch hilft und
+    der Nutzer nichts einrichten muss. RequestTimeoutError ist in notion-client
+    ein Geschwister von APIResponseError, kein Untertyp -- ohne eigenen Zweig
+    faellt ein Timeout ungefiltert bis in die Oberflaeche durch.
+    """
+
+
+# Mobil und nach dem Community-Cloud-Schlafmodus sind Timeouts wahrscheinlich,
+# darum bekommt der Nutzer hier einen Hinweis statt eines Tracebacks.
+_VERBINDUNGSFEHLER = (RequestTimeoutError, HTTPResponseError, httpx.RequestError)
+
+
+def _als_verbindungsfehler(exc: Exception) -> NotionVerbindungsFehler:
+    return NotionVerbindungsFehler(
+        "Notion antwortet gerade nicht. Das liegt meist an einer kurzen Störung "
+        "oder einer wackeligen Verbindung — bitte neu laden oder in der Seitenleiste "
+        f"„Aus Notion aktualisieren“ drücken. (Technisch: {type(exc).__name__})"
+    )
 
 
 def _rich_text_to_plain(prop: Optional[dict[str, Any]]) -> Optional[str]:
@@ -137,6 +165,8 @@ class NotionRepo:
                 f"Notion-Datenbank nicht erreichbar ({exc.code}): {exc}. "
                 "Pruefe NOTION_DATABASE_ID und ob die Integration Zugriff auf die Datenbank hat."
             ) from exc
+        except _VERBINDUNGSFEHLER as exc:
+            raise _als_verbindungsfehler(exc) from exc
 
         self._data_source_id_cache = _data_source_id_aus_datenbank(antwort)
         return self._data_source_id_cache
@@ -171,6 +201,8 @@ class NotionRepo:
                 f"Notion-Abfrage fehlgeschlagen ({exc.code}): {exc}. "
                 "Pruefe, ob die Integration Zugriff auf die Datenbank hat."
             ) from exc
+        except _VERBINDUNGSFEHLER as exc:
+            raise _als_verbindungsfehler(exc) from exc
 
         return [self._seite_zu_rezept(s) for s in seiten]
 

@@ -33,7 +33,7 @@ from models import (
     menge_formatieren,
     skalieren,
 )
-from notion_repo import NotionKonfigurationsFehler, NotionRepo
+from notion_repo import NotionKonfigurationsFehler, NotionRepo, NotionVerbindungsFehler
 from scraper import ScrapingFehler, quelle_bestimmen, rezepttext_holen
 from theme import CSS, STATUS_PILL
 
@@ -216,8 +216,9 @@ def rezept_detail(rezept: Rezept) -> None:
 
     with rechts:
         st.markdown("**Zutaten**")
+        skaliert = skalieren(rezept, ziel)  # einmal rechnen, zweimal verwenden
         zeilen = []
-        for z in skalieren(rezept, ziel):
+        for z in skaliert:
             menge = f"{z.menge_text} {z.einheit}".strip()
             klasse = "zutat-menge" if z.skaliert else "zutat-menge fix"
             anzeige = e(menge) if menge else "nach Gefühl"
@@ -233,7 +234,7 @@ def rezept_detail(rezept: Rezept) -> None:
 
         einkaufsliste = "\n".join(
             f"- {f'{z.menge_text} {z.einheit}'.strip()} {z.zutat}".replace("  ", " ")
-            for z in skalieren(rezept, ziel)
+            for z in skaliert
         )
         with st.expander("Als Einkaufsliste kopieren"):
             st.code(f"{rezept.titel} — {menge_formatieren(ziel)} "
@@ -518,6 +519,12 @@ def tab_fragen(rezepte: list[Rezept]) -> None:
                 st.error(str(exc))
                 return
             except Exception as exc:  # Netzwerk, Rate-Limit, Modellfehler
+                # Frage samt Fehlerhinweis im Verlauf behalten -- sonst ist beim
+                # naechsten Rerun beides weg und der Nutzer tippt alles neu.
+                st.session_state.chat_verlauf.append({"role": "user", "content": eingabe})
+                st.session_state.chat_verlauf.append(
+                    {"role": "assistant", "content": "_Die Anfrage ist fehlgeschlagen. Bitte noch einmal fragen._"}
+                )
                 st.error(f"Anfrage fehlgeschlagen: {exc}")
                 return
         st.markdown(antwort)
@@ -816,6 +823,16 @@ def main() -> None:
 
     try:
         rezepte = rezepte_laden(repo, st.session_state.cache_schluessel)
+    except NotionVerbindungsFehler as exc:
+        # Nur eine Stoerung, keine kaputte Einrichtung: der Nutzer soll es
+        # direkt noch einmal versuchen koennen, statt neu laden zu muessen.
+        sidebar(None)
+        hero("Kurz keine Verbindung", "Rezepte der Familie", "Notion war gerade nicht erreichbar.")
+        st.warning(str(exc))
+        if st.button("Nochmal versuchen", type="primary"):
+            neu_laden()
+            st.rerun()
+        st.stop()
     except NotionKonfigurationsFehler as exc:
         sidebar(None)
         hero("Verbindung fehlgeschlagen", "Rezepte der Familie", "Notion antwortet nicht wie erwartet.")
