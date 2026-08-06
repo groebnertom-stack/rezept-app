@@ -185,7 +185,6 @@ def rezept_detail(rezept: Rezept) -> None:
         return
 
     basis = float(rezept.basis_menge)
-    schritt = 1.0 if basis >= 2 else 0.5
 
     links, rechts = st.columns([1, 2.1], gap="large")
 
@@ -194,12 +193,15 @@ def rezept_detail(rezept: Rezept) -> None:
         # Standardfall der Familie: sieben am Tisch. Passt die Sieben nicht in
         # den erlaubten Bereich (z. B. Gelee mit zwei Glaesern), bleibt die Basis.
         standard = 7.0 if obergrenze >= 7 else basis
+        # Ganzzahlig: niemand bestellt 2,5 Personen oder ein halbes Stueck.
+        ganze_obergrenze = max(1, round(obergrenze))
+        ganzer_standard = min(max(1, round(standard)), ganze_obergrenze)
         ziel = st.number_input(
             rezept.einheit_label,
-            min_value=schritt,
-            max_value=obergrenze,
-            value=standard,
-            step=schritt,
+            min_value=1,
+            max_value=ganze_obergrenze,
+            value=ganzer_standard,
+            step=1,
             key=f"ziel_{rezept.page_id or rezept.titel}",
         )
         faktor = ziel / basis
@@ -311,12 +313,10 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
     # Nur Kategorien anbieten, die tatsächlich belegt sind.
     vorhandene = [k for k in KATEGORIEN if any(r.kategorie == k for r in kochbereit)]
 
-    suchspalte, katspalte, veggiespalte = st.columns([2, 2, 1.55], gap="small")
+    # Kein Suchfeld hier -- die Rezeptauswahl weiter unten hat ihre eigene
+    # Suche, ein zweites Feld direkt unter dem Header war redundant.
+    katspalte, veggiespalte = st.columns([2.5, 1.4], gap="small")
 
-    with suchspalte:
-        suche = st.text_input(
-            "Suchen", placeholder="Titel oder Zutat, z. B. Kartoffeln", label_visibility="collapsed"
-        )
     with katspalte:
         gewaehlte_kats = st.multiselect(
             "Kategorien",
@@ -344,7 +344,7 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
     nur_schnell = zeitwahl == SCHNELL_LABEL
     nur_aufwendig = zeitwahl == AUFWENDIG_LABEL
 
-    treffer = filtern(kochbereit, suche=suche, kategorien=gewaehlte_kats or None,
+    treffer = filtern(kochbereit, kategorien=gewaehlte_kats or None,
                        nur_schnell=nur_schnell, nur_aufwendig=nur_aufwendig,
                        nur_vegetarisch=nur_vegetarisch)
 
@@ -390,8 +390,7 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
             st.markdown(f'<div class="wuerfel-hinweis">{hinweis}</div>', unsafe_allow_html=True)
 
     if not treffer:
-        hinweis = f"„{suche}“" if suche.strip() else "diesem Filter"
-        st.info(f"Kein Rezept passt zu {hinweis}.")
+        st.info("Kein Rezept passt zu diesem Filter.")
         return
 
     titel_liste = [r.titel for r in treffer]

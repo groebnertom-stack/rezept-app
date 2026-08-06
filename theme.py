@@ -479,6 +479,10 @@ section[data-testid="stSidebar"] .block-container {{ padding-top: 1.6rem; }}
   text-align: center;
   max-width: 320px;
   margin: 0 auto 1.4rem;
+  /* Streamlit setzt auf den Vertical-Block-Flexcontainer align-items:start;
+     der Button-Wrapper schrumpft auf Inhaltsbreite und haengt dadurch links
+     statt in der Mitte -- text-align/margin:auto allein reichen hier nicht. */
+  align-items: center;
 }}
 .st-key-wuerfel_panel .stButton {{ display: flex; justify-content: center; }}
 .st-key-wuerfel_panel .stButton button {{
