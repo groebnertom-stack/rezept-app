@@ -6,6 +6,10 @@ import pytest
 
 from models import (
     JSON_PREFIX,
+    VEG_JA,
+    VEG_NEIN,
+    ZEIT_LANG,
+    ZEIT_SCHNELL,
     STATUS_PROCESSED,
     Rezept,
     RezeptParseError,
@@ -213,12 +217,14 @@ def test_llm_kontext_ist_serialisierbar_und_kompakt():
 
 def test_zeit_toepfe_schliessen_sich_aus():
     schnell = rezept_bauen(zeit_minuten=25)
-    grenze = rezept_bauen(zeit_minuten=60)   # genau 1 Std: weder noch
+    luecke = rezept_bauen(zeit_minuten=45)   # zwischen den Schwellen: weder noch
+    grenze = rezept_bauen(zeit_minuten=60)   # genau 1 Std zaehlt als "hab Zeit"
     lang = rezept_bauen(zeit_minuten=90)
     ohne = rezept_bauen()                    # keine Zeitangabe
 
     assert (schnell.ist_schnell, schnell.ist_aufwendig) == (True, False)
-    assert (grenze.ist_schnell, grenze.ist_aufwendig) == (False, False)
+    assert (luecke.ist_schnell, luecke.ist_aufwendig) == (False, False)
+    assert (grenze.ist_schnell, grenze.ist_aufwendig) == (False, True)
     assert (lang.ist_schnell, lang.ist_aufwendig) == (False, True)
     assert (ohne.ist_schnell, ohne.ist_aufwendig) == (False, False)
 
@@ -257,3 +263,47 @@ def test_filtern_kombiniert_zeit_und_vegetarisch():
     assert filtern(alle, nur_vegetarisch=True) == [veggie_schnell, veggie_lang]
     # Widerspruch ist in der UI unmoeglich, in der Funktion aber erlaubt:
     assert filtern(alle, nur_schnell=True, nur_aufwendig=True) == []
+
+
+# ------------------------------------------------------ Notion-Label-Vorrang
+
+
+def test_notion_label_schlaegt_heuristik():
+    fleisch = [{"menge": 1, "einheit": None, "zutat": "Speck"}]
+    r = rezept_bauen(zutaten=fleisch)
+    assert not r.ist_vegetarisch          # Heuristik sagt nein
+
+    r.vegetarisch_label = VEG_JA          # in Notion von Hand korrigiert
+    assert r.ist_vegetarisch
+    r.vegetarisch_label = VEG_NEIN
+    assert not r.ist_vegetarisch
+
+
+def test_zeit_label_schlaegt_rechnung():
+    r = rezept_bauen(zeit_minuten=20)
+    assert r.ist_schnell and not r.ist_aufwendig
+
+    r.zeitaufwand_label = ZEIT_LANG       # in Notion umgesetzt
+    assert r.ist_aufwendig and not r.ist_schnell
+
+
+def test_zeit_label_ohne_zeitangabe_moeglich():
+    # Rezept ohne zeit_minuten laesst sich in Notion trotzdem einsortieren.
+    r = rezept_bauen()
+    assert not r.ist_schnell and not r.ist_aufwendig
+    r.zeitaufwand_label = ZEIT_SCHNELL
+    assert r.ist_schnell
+
+
+def test_label_soll_rechnet_ohne_bestehendes_label():
+    # Sonst spiegelte der Abgleich nur zurueck, was schon dasteht.
+    r = rezept_bauen(zeit_minuten=20)
+    r.zeitaufwand_label = ZEIT_LANG
+    assert r.zeitaufwand_label_soll == ZEIT_SCHNELL
+
+
+def test_zeit_schwellen_einschliesslich():
+    assert rezept_bauen(zeit_minuten=30).zeitaufwand_label_soll == ZEIT_SCHNELL
+    assert rezept_bauen(zeit_minuten=31).zeitaufwand_label_soll is None
+    assert rezept_bauen(zeit_minuten=59).zeitaufwand_label_soll is None
+    assert rezept_bauen(zeit_minuten=60).zeitaufwand_label_soll == ZEIT_LANG

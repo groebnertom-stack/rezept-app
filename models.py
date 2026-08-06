@@ -41,9 +41,19 @@ KATEGORIEN_MAHLZEIT = {KAT_HAUPT, KAT_SUPPE, KAT_SALAT}
 # Ab wann ein Rezept als "muss schnell gehen" zaehlt (Gesamtzeit lt. Quelle).
 SCHNELL_SCHWELLE_MINUTEN = 30
 
-# Ab wann ein Rezept als "ich hab Zeit" zaehlt -- laenger als eine Stunde.
-# Rezepte von genau 60 Minuten fallen bewusst in keinen der beiden Toepfe.
+# Ab wann ein Rezept als "ich hab Zeit" zaehlt -- ab einer Stunde einschliesslich.
+# Zwischen 31 und 59 Minuten liegt bewusst eine Luecke ohne Label.
 AUFWENDIG_SCHWELLE_MINUTEN = 60
+
+# Werte des Notion-Labels "Vegetarisch". Ein Select statt einer Checkbox, damit
+# "noch nie bewertet" (leer) von "geprueft und nicht vegetarisch" unterscheidbar
+# bleibt -- eine unangehakte Checkbox saehe aus wie ein Nein.
+VEG_JA = "ja"
+VEG_NEIN = "nein"
+
+# Werte des Notion-Labels "Zeitaufwand".
+ZEIT_SCHNELL = "Schnell"
+ZEIT_LANG = "Ich hab Zeit"
 
 # Zutaten-Stichwoerter, die ein Rezept nicht-vegetarisch machen. Geprueft wird
 # als Teilzeichenkette, weil deutsche Zutaten Komposita sind ("Rinderfilet",
@@ -234,6 +244,11 @@ class Rezept:
     kategorie: Optional[str] = None
     kategorie_geraten: bool = False
 
+    # Labels aus Notion. None heisst "dort noch nicht gesetzt" -- dann greift
+    # fuer Vegetarisch die Heuristik und fuer die Zeit die Rechnung.
+    vegetarisch_label: Optional[str] = None
+    zeitaufwand_label: Optional[str] = None
+
     parse_fehler: Optional[str] = None
 
     @property
@@ -273,15 +288,50 @@ class Rezept:
         return f"{self.zeit_minuten} Min"
 
     @property
+    def zeitaufwand_label_soll(self) -> Optional[str]:
+        """Welches Zeit-Label das Rezept laut zeit_minuten tragen muesste.
+
+        Rechnet ausdruecklich OHNE das bestehende Label -- sonst spiegelte der
+        Abgleich nur zurueck, was schon dasteht, und koennte nie korrigieren.
+        """
+        if self.zeit_minuten is None:
+            return None
+        if self.zeit_minuten <= SCHNELL_SCHWELLE_MINUTEN:
+            return ZEIT_SCHNELL
+        if self.zeit_minuten >= AUFWENDIG_SCHWELLE_MINUTEN:
+            return ZEIT_LANG
+        return None
+
+    @property
     def ist_schnell(self) -> bool:
-        return self.zeit_minuten is not None and self.zeit_minuten <= SCHNELL_SCHWELLE_MINUTEN
+        if self.zeitaufwand_label:
+            return self.zeitaufwand_label == ZEIT_SCHNELL
+        return self.zeitaufwand_label_soll == ZEIT_SCHNELL
 
     @property
     def ist_aufwendig(self) -> bool:
-        return self.zeit_minuten is not None and self.zeit_minuten > AUFWENDIG_SCHWELLE_MINUTEN
+        # Wie bei ist_vegetarisch hat das Notion-Label Vorrang. So laesst sich
+        # ein Rezept ohne Zeitangabe in Notion von Hand einsortieren.
+        if self.zeitaufwand_label:
+            return self.zeitaufwand_label == ZEIT_LANG
+        return self.zeitaufwand_label_soll == ZEIT_LANG
 
     @property
     def ist_vegetarisch(self) -> bool:
+        """Vegetarisch laut Notion-Label, sonst laut Heuristik.
+
+        Das Label hat Vorrang: wer in Notion von Hand korrigiert, soll nicht
+        von der Heuristik ueberstimmt werden. Ist es leer (noch nie bewertet),
+        greift vegetarisch_geraten.
+        """
+        if self.vegetarisch_label == VEG_JA:
+            return True
+        if self.vegetarisch_label == VEG_NEIN:
+            return False
+        return self.vegetarisch_geraten
+
+    @property
+    def vegetarisch_geraten(self) -> bool:
         """Kein Fleisch und kein Fisch in der Zutatenliste.
 
         Heuristik ueber die Zutatennamen, kein LLM -- wie bei kategorie_raten.

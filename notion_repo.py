@@ -18,6 +18,10 @@ from models import (
     STATUS_ERROR,
     STATUS_PROCESSED,
     STATUS_UNPROCESSED,
+    VEG_JA,
+    VEG_NEIN,
+    ZEIT_LANG,
+    ZEIT_SCHNELL,
     Rezept,
     RezeptParseError,
     zutaten_json_parsen,
@@ -30,6 +34,21 @@ PROP_FOTO = "Foto"
 PROP_TEXT = "Rezepttext (manuell)"
 PROP_ZUTATEN = "Zutaten (strukturiert)"
 PROP_STATUS = "Status"
+PROP_VEGETARISCH = "Vegetarisch"
+PROP_ZEITAUFWAND = "Zeitaufwand"
+
+# Schema der beiden Label-Properties. Select statt Checkbox, damit "leer" als
+# "noch nicht bewertet" lesbar bleibt (siehe models.VEG_JA).
+LABEL_SCHEMA: dict[str, dict[str, Any]] = {
+    PROP_VEGETARISCH: {
+        "select": {"options": [{"name": VEG_JA, "color": "green"},
+                               {"name": VEG_NEIN, "color": "default"}]}
+    },
+    PROP_ZEITAUFWAND: {
+        "select": {"options": [{"name": ZEIT_SCHNELL, "color": "yellow"},
+                               {"name": ZEIT_LANG, "color": "blue"}]}
+    },
+}
 
 
 class NotionFehler(RuntimeError):
@@ -220,6 +239,10 @@ class NotionRepo:
             status=_select_name(props.get(PROP_STATUS)) or STATUS_UNPROCESSED,
             rezepttext=_rich_text_to_plain(props.get(PROP_TEXT)),
             foto_urls=_foto_urls(props.get(PROP_FOTO)),
+            # Fehlen die Properties (noch nicht angelegt), bleibt es bei None
+            # und die App rechnet bzw. raet wie bisher.
+            vegetarisch_label=_select_name(props.get(PROP_VEGETARISCH)),
+            zeitaufwand_label=_select_name(props.get(PROP_ZEITAUFWAND)),
         )
 
         roh = _rich_text_to_plain(props.get(PROP_ZUTATEN))
@@ -257,6 +280,56 @@ class NotionRepo:
                 PROP_STATUS: {"select": {"name": status}},
             },
         )
+
+    # ------------------------------------------------------------- Labels
+
+    def label_properties_fehlen(self) -> list[str]:
+        """Welche der Label-Properties es in der Datenbank noch nicht gibt."""
+        info = self.client.data_sources.retrieve(data_source_id=self._data_source_id())
+        vorhanden = info.get("properties", {})
+        return [name for name in LABEL_SCHEMA if name not in vorhanden]
+
+    def label_properties_anlegen(self) -> list[str]:
+        """Legt fehlende Label-Properties an. Bestehende bleiben unangetastet.
+
+        Notion ergaenzt beim Update nur die uebergebenen Properties, loescht
+        also nichts -- trotzdem werden hier ausdruecklich nur die fehlenden
+        geschickt, damit ein manuell angepasstes Schema nicht ueberschrieben wird.
+        """
+        fehlend = self.label_properties_fehlen()
+        if not fehlend:
+            return []
+        self.client.data_sources.update(
+            data_source_id=self._data_source_id(),
+            properties={name: LABEL_SCHEMA[name] for name in fehlend},
+        )
+        return fehlend
+
+    def labels_schreiben(
+        self,
+        page_id: str,
+        vegetarisch: Optional[bool] = None,
+        zeitaufwand: Optional[str] = None,
+        zeitaufwand_leeren: bool = False,
+    ) -> None:
+        """Setzt die beiden Label-Properties einer Seite.
+
+        vegetarisch=None laesst das Feld unangetastet. zeitaufwand=None ebenso --
+        um es ausdruecklich zu leeren (Rezept liegt zwischen den Schwellen oder
+        hat keine Zeitangabe), zeitaufwand_leeren=True setzen.
+        """
+        properties: dict[str, Any] = {}
+        if vegetarisch is not None:
+            properties[PROP_VEGETARISCH] = {
+                "select": {"name": VEG_JA if vegetarisch else VEG_NEIN}
+            }
+        if zeitaufwand is not None:
+            properties[PROP_ZEITAUFWAND] = {"select": {"name": zeitaufwand}}
+        elif zeitaufwand_leeren:
+            properties[PROP_ZEITAUFWAND] = {"select": None}
+
+        if properties:
+            self.client.pages.update(page_id=page_id, properties=properties)
 
     def fehler_markieren(self, page_id: str, grund: str) -> None:
         """Setzt Status auf 'Fehler' und haelt den Grund im Freitextfeld fest."""

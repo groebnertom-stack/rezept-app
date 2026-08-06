@@ -84,7 +84,7 @@ CHAT_LIMIT = int(os.environ.get("REZEPTE_CHAT_LIMIT", "25"))
 # Beschriftungen der Zeit-Umschalter. Als Konstanten, weil der zurueckgegebene
 # Wert von st.pills die Beschriftung selbst ist und beides zusammenpassen muss.
 SCHNELL_LABEL = f"⚡ Muss schnell gehen (≤ {SCHNELL_SCHWELLE_MINUTEN} Min)"
-AUFWENDIG_LABEL = f"⏳ Ich hab Zeit (> {AUFWENDIG_SCHWELLE_MINUTEN // 60} Std)"
+AUFWENDIG_LABEL = f"⏳ Ich hab Zeit (ab {AUFWENDIG_SCHWELLE_MINUTEN // 60} Std)"
 
 st.set_page_config(
     page_title="Rezepte der Familie",
@@ -564,6 +564,27 @@ def tab_fragen(rezepte: list[Rezept]) -> None:
 # ---------------------------------------------------------- Tab: Verarbeiten
 
 
+def labels_nachziehen(repo: NotionRepo, page_id: str, daten: dict) -> None:
+    """Setzt die Notion-Labels passend zum frisch extrahierten Rezept.
+
+    Fehler bleiben hier stecken: die Labels sind eine Zugabe, ein fehlendes
+    Property oder eine Notion-Stoerung darf die Verarbeitung nicht scheitern
+    lassen -- die Zutaten sind zu dem Zeitpunkt schon geschrieben.
+    """
+    probe = Rezept(titel="", page_id=page_id)
+    try:
+        probe.anwenden_zutaten_json(daten)
+        soll = probe.zeitaufwand_label_soll
+        repo.labels_schreiben(
+            page_id,
+            vegetarisch=probe.vegetarisch_geraten,
+            zeitaufwand=soll,
+            zeitaufwand_leeren=soll is None,
+        )
+    except Exception:
+        pass
+
+
 def ein_rezept_verarbeiten(repo: NotionRepo, rezept: Rezept) -> tuple[bool, str]:
     """Holt die Quelle, extrahiert das Schema und schreibt es nach Notion zurueck."""
     quelle = quelle_bestimmen(rezept.rezepttext, rezept.weblink, rezept.hat_foto)
@@ -595,6 +616,7 @@ def ein_rezept_verarbeiten(repo: NotionRepo, rezept: Rezept) -> tuple[bool, str]
             repo.titel_setzen(rezept.page_id, titel_erkannt)
 
         repo.zutaten_schreiben(rezept.page_id, daten, status=STATUS_PROCESSED)
+        labels_nachziehen(repo, rezept.page_id, daten)
         anzahl = len(daten.get("zutaten", []))
         titel_hinweis = f' als "{titel_erkannt}"' if titel_erkannt else ""
         return True, f"{anzahl} Zutaten erkannt (Quelle: Foto){titel_hinweis}"
@@ -617,6 +639,7 @@ def ein_rezept_verarbeiten(repo: NotionRepo, rezept: Rezept) -> tuple[bool, str]
         return False, f"LLM-Aufruf fehlgeschlagen: {exc}"
 
     repo.zutaten_schreiben(rezept.page_id, daten, status=STATUS_PROCESSED)
+    labels_nachziehen(repo, rezept.page_id, daten)
     anzahl = len(daten.get("zutaten", []))
     return True, f"{anzahl} Zutaten erkannt (Quelle: {methode})"
 

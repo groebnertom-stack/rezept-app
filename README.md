@@ -108,23 +108,48 @@ mit ihr und mit der Suche kombinieren lassen:
 | Filter | Bedingung |
 | --- | --- |
 | ⚡ Muss schnell gehen | `zeit_minuten` ≤ 30 |
-| ⏳ Ich hab Zeit | `zeit_minuten` > 60 |
+| ⏳ Ich hab Zeit | `zeit_minuten` ≥ 60 |
 | 🌱 Vegetarisch | keine Fleisch- oder Fischzutat |
 
 Zeit ist ein Umschalter, kein Paar Häkchen — beides gleichzeitig hätte garantiert
-null Treffer. Rezepte von genau 60 Minuten fallen bewusst in keinen der beiden
-Töpfe, ebenso Rezepte ohne Zeitangabe in der Quelle.
+null Treffer. Rezepte zwischen 31 und 59 Minuten fallen bewusst in keinen der
+beiden Töpfe, ebenso Rezepte ohne Zeitangabe in der Quelle.
 
-**Vegetarisch ist geraten, nicht gepflegt.** In Notion steht kein solches Feld;
-`ist_vegetarisch` prüft die Zutatennamen gegen eine Liste von Fleisch- und
-Fischstämmen — ohne LLM, wie bei `kategorie_raten`. Deutsche Komposita machen das
-heikel: „Rinder­brühe” ist Fleisch, „Fleisch­tomate”, „speckige Erdäpfel” und
-„Frucht­fleisch” sind es nicht. Solche Fälle stehen in `_VEGETARISCHE_AUSNAHMEN`.
-Mehrdeutige Stämme (`hack` in „gehackte Tomaten”, `herz` in „Artischockenherzen”)
-sind gar nicht erst in der Liste. Verdeckt Tierisches — Worcestersauce, Lab im
-Parmesan — erkennt die Heuristik nicht; gemeint ist die übliche Familien-Lesart.
-Ein Rezept, dessen Zutat „Hackfleisch oder schwarze Bohnen” lautet, gilt
-vorsichtshalber als nicht vegetarisch.
+**Zwei echte Notion-Properties: `Vegetarisch` und `Zeitaufwand`.** Beide sind
+Select-Felder, kein Checkbox/Zahl — ein leeres Select bleibt als „noch nicht
+bewertet” von einem gesetzten Wert unterscheidbar. `Vegetarisch` hat die Werte
+`ja`/`nein`, `Zeitaufwand` die Werte `Schnell`/`Ich hab Zeit`. Ist ein Label
+gesetzt, hat es in der App Vorrang vor jeder Berechnung — wer in Notion von Hand
+korrigiert, wird nicht überstimmt. Ist es leer, greift bei Vegetarisch die
+Heuristik (`vegetarisch_geraten`) und bei der Zeit die Rechnung aus
+`zeit_minuten`. So lässt sich auch ein Rezept ganz ohne Zeitangabe in Notion von
+Hand einsortieren.
+
+Frisch verarbeitete Rezepte bekommen beide Labels automatisch mit
+(`app.labels_nachziehen`). Für den Altbestand einmalig:
+
+```bash
+python3 labels_setzen.py              # Trockenlauf, zeigt nur was passieren würde
+python3 labels_setzen.py --schreiben  # legt die Properties an, falls sie fehlen, und setzt die Labels
+```
+
+Ein bereits gesetztes `Vegetarisch`-Label wird dabei **nicht** überschrieben —
+`--neu-bewerten` hebt das für einen erneuten Durchgang auf. `Zeitaufwand` ist
+reine Ableitung aus `zeit_minuten` und wird deshalb immer auf den Sollwert
+gebracht.
+
+**Die Heuristik ist geraten, nicht unfehlbar.** `vegetarisch_geraten` prüft die
+Zutatennamen gegen eine Liste von Fleisch- und Fischstämmen — ohne LLM, wie bei
+`kategorie_raten`. Deutsche Komposita machen das heikel: „Rinder­brühe” ist
+Fleisch, „Fleisch­tomate”, „speckige Erdäpfel” und „Frucht­fleisch” sind es
+nicht. Solche Fälle stehen in `_VEGETARISCHE_AUSNAHMEN`. Mehrdeutige Stämme
+(`hack` in „gehackte Tomaten”, `herz` in „Artischockenherzen”) sind gar nicht
+erst in der Liste. Verdeckt Tierisches — Worcestersauce, Lab im Parmesan —
+erkennt sie nicht; gemeint ist die übliche Familien-Lesart. Ein Rezept, dessen
+Zutat „Hackfleisch oder schwarze Bohnen” lautet, gilt vorsichtshalber als nicht
+vegetarisch. Steht die Heuristik im Widerspruch zu einem bereits gesetzten
+Notion-Label, meldet `labels_setzen.py` das als Konflikt, ohne das Label
+anzufassen.
 
 ---
 
