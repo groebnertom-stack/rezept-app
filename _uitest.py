@@ -51,11 +51,27 @@ class FakeRepo:
                 "basis_menge": 4, "basis_einheit": "Personen", "kategorie": "Hauptgericht",
                 "zeit_minuten": 20,
                 "zutaten": [{"menge": 400, "einheit": "g", "zutat": "Tofu"}]}),
-            # Fleisch und lange Garzeit -- Gegenstueck fuer die neuen Filter.
+            # Fleisch und lange Garzeit -- Gegenstueck fuer die frueheren Filter,
+            # die es in dieser Ansicht nicht mehr gibt, aber als zweites
+            # Hauptgericht fuer die Kategorie-Pillen weiterhin nuetzlich.
             _bau("Rinderbraten", "verarbeitet", {
                 "basis_menge": 6, "basis_einheit": "Personen", "kategorie": "Hauptgericht",
                 "zeit_minuten": 180,
                 "zutaten": [{"menge": 1500, "einheit": "g", "zutat": "Rinderbraten"}]}),
+            # Geschaetzte Basismenge und gemischte Zutaten -- frueher an
+            # Kartoffelknoedel getestet, das aber als Beilage in dieser
+            # Ansicht nicht mehr auftaucht.
+            _bau("Klare Gemüsesuppe", "verarbeitet", {
+                "basis_menge": 12, "basis_einheit": "Portionen", "basis_geschaetzt": True,
+                "hinweis": "Quelle nannte keine Portionszahl", "kategorie": "Suppe",
+                "zutaten": [
+                    {"menge": 1000, "einheit": "g", "zutat": "Gemüse", "skalierbar": True},
+                    {"menge": 1, "einheit": "TL", "zutat": "Salz", "skalierbar": True},
+                    {"menge": None, "einheit": None, "zutat": "Lorbeerblatt", "skalierbar": False},
+                ]}),
+            _bau("Griechischer Salat", "verarbeitet", {
+                "basis_menge": 4, "basis_einheit": "Personen", "kategorie": "Salat",
+                "zutaten": [{"menge": 300, "einheit": "g", "zutat": "Tomaten"}]}),
             _bau("Karottenkuchen", "verarbeitet", {
                 "basis_menge": 12, "basis_einheit": "Stücke",
                 "zutaten": [{"menge": 300, "einheit": "g", "zutat": "Karotten"}]}),
@@ -107,63 +123,94 @@ def main() -> int:
 
     markup = " ".join(m.value for m in at.markdown)
 
-    optionen = at.selectbox[0].options
-    assert optionen == [
-        "Holunderbluetengelee", "Karottenkuchen", "Kartoffelknoedel", "Rinderbraten",
-        "Tofu-Curry mit Spinat",
-    ], optionen
-    print("✓ Rezeptauswahl zeigt nur kochbereite Rezepte:", optionen)
+    # Vor jeder Wahl zeigt die Ansicht nur den Wuerfel -- keine Rezeptliste,
+    # das ist der radikale Teil des neuen Entwurfs.
+    assert len(at.selectbox) == 0, "Rezeptliste sollte vor der ersten Wahl verborgen sein"
+    print("✓ Ohne Würfeln oder manuelle Wahl bleibt die Rezeptliste verborgen")
 
-    labels = [n.label for n in at.number_input]
-    assert any("Gläser" in l or "Stücke" in l for l in labels), labels
-    print("✓ Skalierungs-Label folgt basis_einheit:", labels)
+    assert "Lass den Würfel entscheiden" in markup, "Neue Würfel-Überschrift fehlt"
+    print("✓ Würfel-Panel zeigt „Lass den Würfel entscheiden“")
+
+    # Kategorie-Pillen: "Alle 4" per Default, dahinter die drei Mahlzeit-
+    # Kategorien. Nachspeise/Beilage/Eingemachtes (Kuchen, Knödel, Gelee)
+    # tauchen in dieser Ansicht gar nicht mehr auf.
+    kategorie_optionen = at.pills[0].options
+    assert kategorie_optionen == ["Alle 4", "Hauptgericht", "Suppe", "Salat"], kategorie_optionen
+    print("✓ Kategorie-Pillen:", kategorie_optionen)
+
+    assert "aus <b>4 Hauptgerichten, Suppen &amp; Salaten</b>" in markup, markup[:300]
+    print("✓ Würfel-Topf: 4 Mahlzeiten (Gelee, Kuchen, Beilage ausgeschlossen)")
 
     buttons = [b.label for b in at.button]
     assert any("🎲" in b for b in buttons), buttons
-    print("✓ Würfel-Button vorhanden")
+    assert "Lieber selbst aus der Liste wählen" in buttons, buttons
+    print("✓ Würfel-Button und „Lieber selbst wählen“-Link vorhanden")
 
-    # Der Würfel darf keine Nachspeise und kein Eingemachtes als Abendessen ziehen.
-    markup_start = " ".join(m.value for m in at.markdown)
-    assert "aus <b>2 Hauptgerichten, Suppen" in markup_start, "Würfel-Topf falsch eingegrenzt"
-    print("✓ Würfel-Topf: 2 von 5 Rezepten (Gelee, Kuchen, Beilage ausgeschlossen)")
+    # Kategorie-Pille wechseln: Beschreibung engt sich ein, die Liste bleibt
+    # trotzdem verborgen -- die Pille allein deckt sie nicht auf.
+    at.pills[0].select("Hauptgericht").run()
+    assert not at.exception, [e.value for e in at.exception]
+    markup_haupt = " ".join(m.value for m in at.markdown)
+    assert "aus <b>2 Hauptgerichten</b>" in markup_haupt, markup_haupt[:300]
+    assert len(at.selectbox) == 0, "Kategorie-Wahl allein darf die Liste nicht aufdecken"
+    print("✓ Kategorie-Pille „Hauptgericht“ engt auf 2 Rezepte ein, Liste bleibt verborgen")
+
+    at.pills[0].select("Suppe").run()
+    markup_suppe = " ".join(m.value for m in at.markdown)
+    assert "aus <b>1 Suppen</b>" in markup_suppe, markup_suppe[:300]
+    print("✓ Kategorie-Pille „Suppe“ engt auf 1 Rezept ein")
+
+    # --- "Lieber selbst wählen" deckt die Liste auf -- beschränkt auf Mahlzeiten
+    at_manuell = AppTest.from_file(str(ziel), default_timeout=90)
+    at_manuell.run()
+    at_manuell.button(key="manuell_umschalten").click().run()
+    assert not at_manuell.exception, [e.value for e in at_manuell.exception]
+    optionen = at_manuell.selectbox[0].options
+    assert optionen == [
+        "Griechischer Salat", "Klare Gemüsesuppe", "Rinderbraten", "Tofu-Curry mit Spinat",
+    ], optionen
+    print("✓ „Lieber selbst wählen“ zeigt nur die 4 Mahlzeiten:", optionen)
 
     # Auf das Rezept mit geschätzter Basismenge und gemischten Zutaten wechseln
-    at.selectbox[0].set_value("Kartoffelknoedel").run()
-    markup = " ".join(m.value for m in at.markdown)
-    assert at.number_input[0].label == "Anzahl Stücke", at.number_input[0].label
-    print("✓ Rezeptwechsel ändert das Skalierungs-Label auf „Anzahl Stücke“")
+    at_manuell.selectbox[0].set_value("Klare Gemüsesuppe").run()
+    markup = " ".join(m.value for m in at_manuell.markdown)
+    assert at_manuell.number_input[0].label == "Anzahl Portionen", at_manuell.number_input[0].label
+    print("✓ Rezeptwechsel ändert das Skalierungs-Label auf „Anzahl Portionen“")
 
     assert "geschätzt" in markup, "Hinweis auf geschätzte Basismenge fehlt"
     print("✓ Hinweis auf geschätzte Basismenge")
 
     # Voreinstellung ist die Familiengroesse (7), nicht die Basismenge (12) --
     # die Mengen sind also von Haus aus heruntergerechnet.
-    assert at.number_input[0].value == 7.0, at.number_input[0].value
-    assert "583 g" in markup and "Muskatnuss" in markup, "Zutatenliste nicht gerendert"
+    assert at_manuell.number_input[0].value == 7, at_manuell.number_input[0].value
+    assert "583 g" in markup and "Lorbeerblatt" in markup, "Zutatenliste nicht gerendert"
     assert "nach Gefühl" in markup, "Zutat ohne Menge falsch dargestellt"
-    print("✓ Zutatenliste auf Standard 7 Stück: 1000 g → 583 g, inkl. „nach Gefühl“")
+    print("✓ Zutatenliste auf Standard 7 Portionen: 1000 g → 583 g, inkl. „nach Gefühl“")
 
     # Auf die Basismenge zurückstellen -- dort müssen die Originalwerte stehen
-    at.number_input[0].set_value(12).run()
-    markup_basis = " ".join(m.value for m in at.markdown)
+    at_manuell.number_input[0].set_value(12).run()
+    markup_basis = " ".join(m.value for m in at_manuell.markdown)
     assert "1000 g" in markup_basis and "1 TL" in markup_basis, markup_basis[:400]
-    print("✓ Auf Basismenge 12 Stück stehen die Originalmengen (1000 g, 1 TL)")
+    print("✓ Auf Basismenge 12 Portionen stehen die Originalmengen (1000 g, 1 TL)")
 
-    # Skalierung 12 -> 24 Stück
-    at.number_input[0].set_value(24).run()
-    markup2 = " ".join(m.value for m in at.markdown)
-    assert "2000 g" in markup2, "Skalierung auf 24 Stück fehlgeschlagen"
+    # Skalierung 12 -> 24 Portionen
+    at_manuell.number_input[0].set_value(24).run()
+    markup2 = " ".join(m.value for m in at_manuell.markdown)
+    assert "2000 g" in markup2, "Skalierung auf 24 Portionen fehlgeschlagen"
     assert "2 TL" in markup2, "Kleine Menge falsch skaliert"
-    assert "Muskatnuss" in markup2 and "nach Gefühl" in markup2
-    print("✓ Interaktive Skalierung 12 → 24 Stück: 1000 g → 2000 g, 1 TL → 2 TL")
+    assert "Lorbeerblatt" in markup2 and "nach Gefühl" in markup2
+    print("✓ Interaktive Skalierung 12 → 24 Portionen: 1000 g → 2000 g, 1 TL → 2 TL")
 
-    # Würfel-Button drücken (der im Panel, nicht die Bottom-Nav-Kachel)
-    wuerfel = at.button(key="wuerfel_dice")
+    # --- Würfel-Button in frischer Instanz (der im Panel, nicht die Bottom-Nav-Kachel)
+    at_wuerfel = AppTest.from_file(str(ziel), default_timeout=90)
+    at_wuerfel.run()
+    wuerfel = at_wuerfel.button(key="wuerfel_dice")
     at2 = wuerfel.click().run()
     assert not at2.exception, [e.value for e in at2.exception]
     texte = [m.value for m in at2.markdown] + [s.value for s in at2.success]
     assert any("Der Würfel sagt" in t for t in texte), "Würfel-Ergebnis nicht angezeigt"
-    print("✓ Würfel-Button liefert ein Rezept")
+    assert len(at2.selectbox) == 1, "Nach dem Würfeln muss die Liste sichtbar sein"
+    print("✓ Würfel-Button liefert ein Rezept und deckt die Liste automatisch auf")
 
     # --- Ansicht „Fragen“ über die Bottom-Nav
     at_chat = AppTest.from_file(str(ziel), default_timeout=90)
@@ -176,34 +223,6 @@ def main() -> int:
     markup_chat = " ".join(m.value for m in at_chat.markdown)
     assert "AUS DEM VORRAT" in markup_chat.upper(), "Gruppierte Einstiege fehlen"
     print("✓ Ansicht „Fragen“: gruppierte Einstiege im Leerzustand")
-
-    # --- Zeit-Umschalter und Vegetarisch-Filter
-    at_zeit = AppTest.from_file(str(ziel), default_timeout=90)
-    at_zeit.run()
-    # .options liefert den Text ohne fuehrendes Emoji -- Streamlit zieht es als
-    # Icon ab. select() braucht aber die vollstaendige Beschriftung, also aus
-    # dem Proto zusammensetzen statt sie hier zu wiederholen.
-    zeit_optionen = [f"{o.content_icon} {o.content}" for o in at_zeit.pills[0].proto.options]
-    schnell_label, aufwendig_label = zeit_optionen
-
-    at_zeit.pills[0].select(schnell_label).run()
-    assert not at_zeit.exception, [e.value for e in at_zeit.exception]
-    assert at_zeit.selectbox[0].options == ["Tofu-Curry mit Spinat"], at_zeit.selectbox[0].options
-    print("✓ Filter „Muss schnell gehen“: nur das 20-Minuten-Rezept")
-
-    at_lang = AppTest.from_file(str(ziel), default_timeout=90)
-    at_lang.run()
-    at_lang.pills[0].select(aufwendig_label).run()
-    assert at_lang.selectbox[0].options == ["Rinderbraten"], at_lang.selectbox[0].options
-    print("✓ Filter „Ich hab Zeit“: nur das 3-Stunden-Rezept")
-
-    at_veg = AppTest.from_file(str(ziel), default_timeout=90)
-    at_veg.run()
-    at_veg.checkbox[0].set_value(True).run()
-    assert not at_veg.exception, [e.value for e in at_veg.exception]
-    assert "Rinderbraten" not in at_veg.selectbox[0].options, at_veg.selectbox[0].options
-    assert "Tofu-Curry mit Spinat" in at_veg.selectbox[0].options, at_veg.selectbox[0].options
-    print("✓ Filter „Vegetarisch“: Rinderbraten raus, Tofu-Curry drin")
 
     # --- Schreibzugriff: die Upload-Kachel erscheint nur, wenn ausdrücklich erlaubt
     at_ro = AppTest.from_file(str(ziel), default_timeout=90)
@@ -231,8 +250,8 @@ def main() -> int:
         assert not at_up.exception, [e.value for e in at_up.exception]
 
         markup_up = " ".join(m.value for m in at_up.markdown)
-        assert 'class="zahl">8<' in markup_up, "Gesamtzahl der Statistik falsch"
-        print("✓ Ansicht „Upload“: Statistik-Kacheln gerendert (8 Rezepte gesamt)")
+        assert 'class="zahl">10<' in markup_up, "Gesamtzahl der Statistik falsch"
+        print("✓ Ansicht „Upload“: Statistik-Kacheln gerendert (10 Rezepte gesamt)")
 
         assert len(at_up.radio) == 1, at_up.radio
         assert at_up.radio[0].options[0] == "Verarbeiten", at_up.radio[0].options

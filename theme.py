@@ -23,6 +23,21 @@ FARBEN = {
     "error_soft": "#FAE4E1",
 }
 
+# Inline-SVG statt Emoji fuer den Wuerfel: ein Emoji-Glyph laesst sich per CSS
+# nicht umfaerben oder in seinen Proportionen an das Design-Badge anpassen.
+# Fuenferwurf mit einem Akzent-Auge, exakt aus der Palette oben.
+_WUERFEL_SVG = (
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' "
+    "viewBox='0 0 100 100'%3E"
+    "%3Crect x='4' y='4' width='92' height='92' rx='22' fill='white'/%3E"
+    f"%3Ccircle cx='27' cy='27' r='9' fill='{FARBEN['accent'].replace('#', '%23')}'/%3E"
+    f"%3Ccircle cx='73' cy='27' r='9' fill='{FARBEN['text'].replace('#', '%23')}'/%3E"
+    f"%3Ccircle cx='50' cy='50' r='9' fill='{FARBEN['text'].replace('#', '%23')}'/%3E"
+    f"%3Ccircle cx='27' cy='73' r='9' fill='{FARBEN['text'].replace('#', '%23')}'/%3E"
+    f"%3Ccircle cx='73' cy='73' r='9' fill='{FARBEN['text'].replace('#', '%23')}'/%3E"
+    "%3C/svg%3E"
+)
+
 CSS = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
@@ -486,19 +501,31 @@ section[data-testid="stSidebar"] .block-container {{ padding-top: 1.6rem; }}
 }}
 .st-key-wuerfel_panel .stButton {{ display: flex; justify-content: center; }}
 .st-key-wuerfel_panel .stButton button {{
-  width: 92px;
-  height: 92px;
-  border-radius: 28px;
+  width: 156px;
+  height: 156px;
+  border-radius: 40px;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   border: none;
-  box-shadow: 0 8px 20px rgba(158,63,90,0.3);
-  font-size: 40px;
+  box-shadow: 0 14px 28px rgba(158,63,90,0.35);
   line-height: 1;
   padding: 0;
+  background-image: url("{_WUERFEL_SVG}");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 88px 88px;
   transition: transform 0.15s ease;
 }}
+/* Emoji-Fallback bleibt im Accessible-Name, aber font-size:0 allein reicht
+   nicht -- manche Browser rendern das Glyph trotzdem winzig. Text komplett
+   aus dem sichtbaren Bereich schieben, damit nur das SVG zu sehen ist. */
+.st-key-wuerfel_panel .stButton button p {{
+  font-size: 0;
+  text-indent: -9999px;
+  overflow: hidden;
+  position: absolute;
+}}
 .st-key-wuerfel_panel .stButton button:hover {{
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  background-color: transparent;
   color: initial;
   border-color: transparent;
   transform: translateY(-2px);
@@ -508,33 +535,82 @@ section[data-testid="stSidebar"] .block-container {{ padding-top: 1.6rem; }}
   box-shadow: none;
 }}
 .wuerfel-dice-rolling {{
-  width: 92px;
-  height: 92px;
+  width: 156px;
+  height: 156px;
   margin: 0 auto;
-  border-radius: 28px;
+  border-radius: 40px;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  box-shadow: 0 8px 20px rgba(158,63,90,0.3);
+  box-shadow: 0 14px 28px rgba(158,63,90,0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
+  background-image: url("{_WUERFEL_SVG}");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 88px 88px;
   animation: diceSpin 0.85s ease-in-out;
 }}
 .wuerfel-panel-label {{
   font-family: 'Fraunces', Georgia, serif;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 700;
+  font-size: 1.3rem;
   color: var(--text);
-  margin-top: 0.7rem;
+  margin-top: 1.1rem;
 }}
 .wuerfel-hinweis {{
-  font-size: 0.76rem;
+  font-size: 0.85rem;
   color: var(--muted);
   line-height: 1.5;
-  max-width: 260px;
+  max-width: 300px;
   margin: 0.5rem auto 0;
 }}
 .wuerfel-hinweis b {{ color: var(--text); }}
+
+/* Kategorie-Pillen unter dem Wuerfel-Panel -- Segmented Control, zentriert
+   statt linksbuendig wie die Zeit-/Veggie-Filter (die in dieser Ansicht
+   nicht mehr auftauchen, aber ihre CSS bleibt fuer eine moegliche
+   Wiederverwendung z.B. im Fragen-Tab stehen). */
+.st-key-kategorie_filter {{ text-align: center; margin: 0 auto 1.2rem; max-width: 340px; }}
+.st-key-kategorie_filter [data-baseweb="button-group"] {{
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}}
+.st-key-kategorie_filter button {{
+  border-radius: 999px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface-alt) !important;
+  color: var(--text) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1rem !important;
+  white-space: nowrap;
+}}
+.st-key-kategorie_filter button[aria-checked="true"], .st-key-kategorie_filter button[data-selected="true"] {{
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}}
+
+/* "Lieber selbst aus der Liste waehlen" -- als Textlink, kein Button-Look. */
+.st-key-manuell_link {{ text-align: center; margin: 0.2rem 0 1.4rem; }}
+.st-key-manuell_link .stButton {{ display: flex; justify-content: center; }}
+.st-key-manuell_link .stButton button {{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--accent-dark) !important;
+  font-weight: 600 !important;
+  font-size: 0.86rem !important;
+  padding: 0.3rem 0.5rem !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}}
+.st-key-manuell_link .stButton button:hover {{
+  color: var(--accent) !important;
+  transform: none !important;
+}}
 
 .wuerfel-karte {{
   background: var(--surface);

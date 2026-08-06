@@ -8,7 +8,7 @@ Zutatenlisten, rechnet Mengen live auf jede Zielmenge hoch, beantwortet Freitext
 
 | Reiter | Funktion |
 | --- | --- |
-| **Kochen** | Rezept suchen oder auswählen, Menge skalieren, Einkaufsliste kopieren, Zufallsrezept würfeln |
+| **Kochen** | Würfel schlägt eine Mahlzeit vor, wahlweise nach Kategorie eingeengt; Menge skalieren, Einkaufsliste kopieren |
 | **Fragen** | Freitext-Chat mit Claude über die gesamte Sammlung („Was kann ich aus Kartoffeln kochen?“) |
 | **Verarbeiten** | Rezepte mit Status „nicht verarbeitet“ scrapen, extrahieren, zurück nach Notion schreiben |
 | **Fehler** | Problemfälle sichten, Rezepttext manuell nachtragen, sofort neu verarbeiten |
@@ -95,26 +95,26 @@ sie mit; für Rezepte aus der Zeit davor greift eine Heuristik aus Titel und Bas
 (`kategorie_raten`), erkennbar am `?` hinter dem Kategorie-Label in der UI.
 
 Der Würfel zieht nur aus Hauptgericht, Suppe und Salat — sonst schlägt er
-Holunderblütengelee als Abendessen vor. Ein eigenes Kategorie-Filterfeld gibt es
-in der UI nicht (mehr); die Rezeptauswahl unten filtert stattdessen per Tippen
-im Titel.
+Holunderblütengelee als Abendessen vor.
 
 Die Heuristik prüft auf Wortenden, nicht auf Teilstrings: „Hühner**suppe**” wird als
 Suppe erkannt, „**Pesto**fisch” aber nicht als Eingemachtes und „Ofenlachs mit R**eis**”
 nicht als Nachspeise.
 
-**Filter beim Würfeln.** Neben der Kategorie gibt es drei weitere Filter, die sich
-mit ihr und mit der Suche kombinieren lassen:
+**Der Kochen-Reiter dreht sich nur noch ums Würfeln.** Kein Suchfeld, keine
+Rezeptliste von Haus aus sichtbar — nur der Würfel, eine Segmented-Control mit
+den drei Mahlzeit-Kategorien (`Alle N` / Hauptgericht / Suppe / Salat) und darunter
+der Link „Lieber selbst aus der Liste wählen”. Die Liste erscheint erst, wenn
+entweder gewürfelt wurde oder jemand ausdrücklich selbst wählen will — dann bleibt
+sie für den Rest der Sitzung sichtbar und zeigt weiterhin nur Mahlzeiten, keine
+Nachspeisen oder Beilagen. Nachspeise, Gebäck, Eingemachtes und Getränk sind über
+diesen Reiter gar nicht mehr erreichbar, nur noch über den Chat oder direkt in Notion.
 
-| Filter | Bedingung |
-| --- | --- |
-| ⚡ Muss schnell gehen | `zeit_minuten` ≤ 30 |
-| ⏳ Ich hab Zeit | `zeit_minuten` ≥ 60 |
-| 🌱 Vegetarisch | keine Fleisch- oder Fischzutat |
-
-Zeit ist ein Umschalter, kein Paar Häkchen — beides gleichzeitig hätte garantiert
-null Treffer. Rezepte zwischen 31 und 59 Minuten fallen bewusst in keinen der
-beiden Töpfe, ebenso Rezepte ohne Zeitangabe in der Quelle.
+Die frühere „Muss schnell gehen“/„Ich hab Zeit“/„Vegetarisch“-Filterreihe ist aus
+dieser Ansicht verschwunden — schlicht kein Platz im neuen, aufs Würfeln
+zugeschnittenen Entwurf. Die Notion-Labels und die Heuristik dahinter (nächster
+Abschnitt) laufen unverändert weiter, sie werden nur hier nicht mehr angezeigt;
+der Chat greift weiterhin darauf zu.
 
 **Zwei echte Notion-Properties: `Vegetarisch` und `Zeitaufwand`.** Beide sind
 Select-Felder, kein Checkbox/Zahl — ein leeres Select bleibt als „noch nicht

@@ -22,14 +22,14 @@ from dotenv import load_dotenv
 import bilder as bilder_modul
 import llm
 from models import (
-    AUFWENDIG_SCHWELLE_MINUTEN,
-    SCHNELL_SCHWELLE_MINUTEN,
+    KAT_HAUPT,
+    KAT_SALAT,
+    KAT_SUPPE,
     STATUS_ERROR,
     STATUS_PROCESSED,
     STATUS_UNPROCESSED,
     Rezept,
     RezeptParseError,
-    filtern,
     menge_formatieren,
     skalieren,
 )
@@ -80,11 +80,6 @@ SCHREIBZUGRIFF = _flag("REZEPTE_SCHREIBZUGRIFF", "false")
 # wenn die App oeffentlich erreichbar ist. 0 = kein Limit.
 CHAT_LIMIT = int(os.environ.get("REZEPTE_CHAT_LIMIT", "25"))
 
-# Beschriftungen der Zeit-Umschalter. Als Konstanten, weil der zurueckgegebene
-# Wert von st.pills die Beschriftung selbst ist und beides zusammenpassen muss.
-SCHNELL_LABEL = f"⚡ Muss schnell gehen (≤ {SCHNELL_SCHWELLE_MINUTEN} Min)"
-AUFWENDIG_LABEL = f"⏳ Ich hab Zeit (ab {AUFWENDIG_SCHWELLE_MINUTEN // 60} Std)"
-
 st.set_page_config(
     page_title="Rezepte der Familie",
     page_icon="🍲",
@@ -115,6 +110,7 @@ def zustand_init() -> None:
     st.session_state.setdefault("gewaehltes_rezept", None)
     st.session_state.setdefault("wuerfel_treffer", None)
     st.session_state.setdefault("wuerfel_rollt", False)
+    st.session_state.setdefault("manuelle_auswahl", False)
     st.session_state.setdefault("verarbeitung_log", [])
     st.session_state.setdefault("chat_aufrufe", 0)
 
@@ -300,76 +296,99 @@ def wuerfel_karte(rezept: Rezept) -> None:
     )
 
 
+# Beschriftung der "Alle"-Pille traegt die Trefferzahl, muss also bei jedem
+# Render neu gebaut werden -- deshalb Funktion statt Konstante wie bei den
+# frueheren Zeit-Labels.
+def _alle_label(anzahl: int) -> str:
+    return f"Alle {anzahl}"
+
+
+# Grammatik je Kategorie fuer den Beschreibungssatz unter dem Wuerfel.
+_KATEGORIE_PLURAL = {KAT_HAUPT: "Hauptgerichten", KAT_SUPPE: "Suppen", KAT_SALAT: "Salaten"}
+
+
 def tab_kochen(rezepte: list[Rezept]) -> None:
     kochbereit = [r for r in rezepte if r.ist_skalierbar]
 
-    hero("Familienküche", "Was kochen wir heute?")
+    hero("Familienküche", "Was koche ich heute?")
 
     if not kochbereit:
         st.info("Noch kein Rezept mit strukturierten Zutaten. Starte im Reiter „Verarbeiten“.")
         return
 
-    # Kein Suchfeld und keine Kategorieauswahl hier -- die Rezeptauswahl
-    # weiter unten hat ihre eigene Suche, und die Kategorie war ein zweiter
-    # Filter direkt unter dem Header, der die Flaeche unnoetig fuellte.
-    with st.container(key="veggie_filter"):
-        nur_vegetarisch = st.checkbox("🌱 Vegetarisch")
+    # Dieser Reiter dreht sich nur noch um die Frage "was gibt's zu essen" --
+    # Nachspeisen, Gebäck und Eingemachtes sind hier kein Thema mehr, die
+    # erreicht man ueber den Chat oder direkt in Notion. Vegetarisch- und
+    # Zeit-Label bleiben in models/notion_repo unangetastet, sie haben hier
+    # im neuen Entwurf nur keinen Platz mehr.
+    mahlzeiten = sorted((r for r in kochbereit if r.ist_mahlzeit), key=lambda r: r.titel.lower())
+    if not mahlzeiten:
+        st.info("Noch kein Hauptgericht, keine Suppe und kein Salat mit Zutaten vorhanden.")
+        return
 
-    # Zeit ist ein Umschalter, kein Paar Haekchen: "schnell" und "hab Zeit"
-    # schliessen sich aus, zwei Checkboxen koennten beide an sein und haetten
-    # dann garantiert null Treffer. Eigene Zeile, damit beide Pillen
-    # nebeneinander passen statt umzubrechen.
-    with st.container(key="zeit_filter"):
-        zeitwahl = st.pills(
-            "Zeit",
-            [SCHNELL_LABEL, AUFWENDIG_LABEL],
+    alle_label = _alle_label(len(mahlzeiten))
+    with st.container(key="kategorie_filter"):
+        kategorie_wahl = st.pills(
+            "Kategorie",
+            [alle_label, KAT_HAUPT, KAT_SUPPE, KAT_SALAT],
             selection_mode="single",
+            default=alle_label,
+            required=True,
             label_visibility="collapsed",
         )
 
-    nur_schnell = zeitwahl == SCHNELL_LABEL
-    nur_aufwendig = zeitwahl == AUFWENDIG_LABEL
-
-    treffer = filtern(kochbereit, nur_schnell=nur_schnell, nur_aufwendig=nur_aufwendig,
-                       nur_vegetarisch=nur_vegetarisch)
-
-    # Der Würfel soll ein Abendessen vorschlagen, kein Gelee -- er zieht nur
-    # aus Hauptgerichten, Suppen und Salaten.
-    wuerfel_topf = [r for r in treffer if r.ist_mahlzeit]
-
-    hinweis = (
-        f"Der Würfel zieht aus <b>{len(wuerfel_topf)} Hauptgerichten, Suppen &amp; "
-        "Salaten</b> — Nachspeisen, Gebäck und Eingemachtes bleiben außen vor."
-    )
-
-    zusaetze = [t for t, an in ((("schnell"), nur_schnell),
-                                ("über eine Stunde", nur_aufwendig),
-                                ("vegetarisch", nur_vegetarisch)) if an]
-    if zusaetze:
-        hinweis += f" Eingeschränkt auf: {e(' und '.join(zusaetze))}."
+    if kategorie_wahl == alle_label:
+        pool = mahlzeiten
+        beschreibung = (
+            f"Er zieht aus <b>{len(pool)} Hauptgerichten, Suppen &amp; Salaten</b>. "
+            "Nachspeisen, Gebäck und Eingemachtes bleiben außen vor."
+        )
+    else:
+        pool = [r for r in mahlzeiten if r.kategorie == kategorie_wahl]
+        beschreibung = f"Er zieht aus <b>{len(pool)} {_KATEGORIE_PLURAL[kategorie_wahl]}</b>."
 
     with st.container(key="wuerfel_panel"):
         if st.session_state.wuerfel_rollt:
-            st.markdown('<div class="wuerfel-dice-rolling">🎲</div>', unsafe_allow_html=True)
-            st.markdown('<div class="wuerfel-panel-label">Würfeln</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="wuerfel-hinweis">{hinweis}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="wuerfel-dice-rolling"></div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="wuerfel-panel-label">Lass den Würfel entscheiden</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(f'<div class="wuerfel-hinweis">{beschreibung}</div>', unsafe_allow_html=True)
             time.sleep(0.85)
             st.session_state.wuerfel_rollt = False
             st.rerun()
         else:
-            if st.button("🎲", key="wuerfel_dice", disabled=not wuerfel_topf):
-                st.session_state.wuerfel_treffer = random.choice(wuerfel_topf).titel
+            if st.button("🎲", key="wuerfel_dice", disabled=not pool):
+                st.session_state.wuerfel_treffer = random.choice(pool).titel
                 st.session_state.gewaehltes_rezept = st.session_state.wuerfel_treffer
                 st.session_state.wuerfel_rollt = True
                 st.rerun()
-            st.markdown('<div class="wuerfel-panel-label">Würfeln</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="wuerfel-hinweis">{hinweis}</div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="wuerfel-panel-label">Lass den Würfel entscheiden</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(f'<div class="wuerfel-hinweis">{beschreibung}</div>', unsafe_allow_html=True)
 
-    if not treffer:
-        st.info("Kein Rezept passt zu diesem Filter.")
+    # Vor der ersten Wahl zeigt die Ansicht nur den Wuerfel -- die Liste
+    # bleibt verborgen, bis gewuerfelt wurde oder jemand ausdruecklich selbst
+    # waehlen will. Einmal sichtbar, bleibt sie es fuer den Rest der Sitzung.
+    zeige_liste = (
+        st.session_state.gewaehltes_rezept is not None
+        or st.session_state.manuelle_auswahl
+    )
+    if not zeige_liste:
+        with st.container(key="manuell_link"):
+            if st.button("Lieber selbst aus der Liste wählen", key="manuell_umschalten"):
+                st.session_state.manuelle_auswahl = True
+                st.rerun()
         return
 
-    titel_liste = [r.titel for r in treffer]
+    if not pool:
+        st.info("Kein Rezept in dieser Kategorie.")
+        return
+
+    titel_liste = [r.titel for r in pool]
     vorauswahl = st.session_state.get("gewaehltes_rezept")
     index = titel_liste.index(vorauswahl) if vorauswahl in titel_liste else 0
 
@@ -377,11 +396,11 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
     st.session_state.gewaehltes_rezept = gewaehlt
 
     if st.session_state.wuerfel_treffer == gewaehlt:
-        wuerfel_karte(next(r for r in treffer if r.titel == gewaehlt))
+        wuerfel_karte(next(r for r in pool if r.titel == gewaehlt))
         st.session_state.wuerfel_treffer = None
 
     st.divider()
-    rezept_detail(next(r for r in treffer if r.titel == gewaehlt))
+    rezept_detail(next(r for r in pool if r.titel == gewaehlt))
 
 
 # -------------------------------------------------------------- Tab: Fragen
