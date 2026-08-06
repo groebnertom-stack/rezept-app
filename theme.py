@@ -347,7 +347,7 @@ section[data-testid="stSidebar"] .block-container {{ padding-top: 1.6rem; }}
 .schritt-text {{ padding-top: 0.15rem; line-height: 1.5; }}
 
 /* ---------------------------------------------------------- Schnellfilter */
-.st-key-schnell_filter label {{
+.st-key-schnell_filter label, .st-key-veggie_filter label {{
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -360,20 +360,38 @@ section[data-testid="stSidebar"] .block-container {{ padding-top: 1.6rem; }}
   cursor: pointer;
   width: 100%;
   justify-content: center;
+  white-space: nowrap;
 }}
-.st-key-schnell_filter label > div:not([data-testid="stWidgetLabel"]) {{
+.st-key-schnell_filter label > div:not([data-testid="stWidgetLabel"]), .st-key-veggie_filter label > div:not([data-testid="stWidgetLabel"]) {{
   width: 14px;
   height: 14px;
   min-width: 14px;
   border-radius: 4px;
   flex-shrink: 0;
 }}
-.st-key-schnell_filter [data-testid="stWidgetLabel"] {{ visibility: visible !important; }}
-.st-key-schnell_filter [data-testid="stWidgetLabel"] p {{ margin: 0; }}
-.st-key-schnell_filter:has(input:checked) label {{
+.st-key-schnell_filter [data-testid="stWidgetLabel"], .st-key-veggie_filter [data-testid="stWidgetLabel"] {{ visibility: visible !important; }}
+.st-key-schnell_filter [data-testid="stWidgetLabel"] p, .st-key-veggie_filter [data-testid="stWidgetLabel"] p {{ margin: 0; }}
+.st-key-schnell_filter:has(input:checked) label, .st-key-veggie_filter:has(input:checked) label {{
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+}}
+
+/* Zeit-Umschalter (st.pills): gleiche Pillen-Optik wie die Filter-Checkbox. */
+.st-key-zeit_filter [data-baseweb="button-group"] {{ gap: 0.4rem; flex-wrap: wrap; }}
+.st-key-zeit_filter button {{
+  border-radius: 999px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface-alt) !important;
+  color: var(--text) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 0.9rem !important;
+}}
+.st-key-zeit_filter button[aria-checked="true"], .st-key-zeit_filter button[data-selected="true"] {{
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
 }}
 
 /* ------------------------------------------------------------------ Inputs */

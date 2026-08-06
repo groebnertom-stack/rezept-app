@@ -102,6 +102,30 @@ Die Heuristik prüft auf Wortenden, nicht auf Teilstrings: „Hühner**suppe**�
 Suppe erkannt, „**Pesto**fisch” aber nicht als Eingemachtes und „Ofenlachs mit R**eis**”
 nicht als Nachspeise.
 
+**Filter beim Würfeln.** Neben der Kategorie gibt es drei weitere Filter, die sich
+mit ihr und mit der Suche kombinieren lassen:
+
+| Filter | Bedingung |
+| --- | --- |
+| ⚡ Muss schnell gehen | `zeit_minuten` ≤ 30 |
+| ⏳ Ich hab Zeit | `zeit_minuten` > 60 |
+| 🌱 Vegetarisch | keine Fleisch- oder Fischzutat |
+
+Zeit ist ein Umschalter, kein Paar Häkchen — beides gleichzeitig hätte garantiert
+null Treffer. Rezepte von genau 60 Minuten fallen bewusst in keinen der beiden
+Töpfe, ebenso Rezepte ohne Zeitangabe in der Quelle.
+
+**Vegetarisch ist geraten, nicht gepflegt.** In Notion steht kein solches Feld;
+`ist_vegetarisch` prüft die Zutatennamen gegen eine Liste von Fleisch- und
+Fischstämmen — ohne LLM, wie bei `kategorie_raten`. Deutsche Komposita machen das
+heikel: „Rinder­brühe” ist Fleisch, „Fleisch­tomate”, „speckige Erdäpfel” und
+„Frucht­fleisch” sind es nicht. Solche Fälle stehen in `_VEGETARISCHE_AUSNAHMEN`.
+Mehrdeutige Stämme (`hack` in „gehackte Tomaten”, `herz` in „Artischockenherzen”)
+sind gar nicht erst in der Liste. Verdeckt Tierisches — Worcestersauce, Lab im
+Parmesan — erkennt die Heuristik nicht; gemeint ist die übliche Familien-Lesart.
+Ein Rezept, dessen Zutat „Hackfleisch oder schwarze Bohnen” lautet, gilt
+vorsichtshalber als nicht vegetarisch.
+
 ---
 
 # Weg zur öffentlichen App

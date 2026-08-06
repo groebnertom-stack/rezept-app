@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 import bilder as bilder_modul
 import llm
 from models import (
+    AUFWENDIG_SCHWELLE_MINUTEN,
     KATEGORIEN,
     SCHNELL_SCHWELLE_MINUTEN,
     STATUS_ERROR,
@@ -79,6 +80,11 @@ SCHREIBZUGRIFF = _flag("REZEPTE_SCHREIBZUGRIFF", "false")
 # Obergrenze fuer LLM-Aufrufe pro Browser-Session. Schuetzt das API-Budget,
 # wenn die App oeffentlich erreichbar ist. 0 = kein Limit.
 CHAT_LIMIT = int(os.environ.get("REZEPTE_CHAT_LIMIT", "25"))
+
+# Beschriftungen der Zeit-Umschalter. Als Konstanten, weil der zurueckgegebene
+# Wert von st.pills die Beschriftung selbst ist und beides zusammenpassen muss.
+SCHNELL_LABEL = f"⚡ Muss schnell gehen (≤ {SCHNELL_SCHWELLE_MINUTEN} Min)"
+AUFWENDIG_LABEL = f"⏳ Ich hab Zeit (> {AUFWENDIG_SCHWELLE_MINUTEN // 60} Std)"
 
 st.set_page_config(
     page_title="Rezepte der Familie",
@@ -305,7 +311,7 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
     # Nur Kategorien anbieten, die tatsächlich belegt sind.
     vorhandene = [k for k in KATEGORIEN if any(r.kategorie == k for r in kochbereit)]
 
-    suchspalte, katspalte, zeitspalte = st.columns([2, 2.4, 1.4], gap="medium")
+    suchspalte, katspalte, veggiespalte = st.columns([2, 2, 1.55], gap="small")
 
     with suchspalte:
         suche = st.text_input(
@@ -319,14 +325,28 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
             placeholder="Alle Kategorien",
             label_visibility="collapsed",
         )
-    with zeitspalte:
-        with st.container(key="schnell_filter"):
-            nur_schnell = st.checkbox(
-                f"⚡ Muss schnell gehen (≤ {SCHNELL_SCHWELLE_MINUTEN} Min)"
-            )
+    with veggiespalte:
+        with st.container(key="veggie_filter"):
+            nur_vegetarisch = st.checkbox("🌱 Vegetarisch")
+
+    # Zeit ist ein Umschalter, kein Paar Haekchen: "schnell" und "hab Zeit"
+    # schliessen sich aus, zwei Checkboxen koennten beide an sein und haetten
+    # dann garantiert null Treffer. Eigene Zeile, damit beide Pillen
+    # nebeneinander passen statt umzubrechen.
+    with st.container(key="zeit_filter"):
+        zeitwahl = st.pills(
+            "Zeit",
+            [SCHNELL_LABEL, AUFWENDIG_LABEL],
+            selection_mode="single",
+            label_visibility="collapsed",
+        )
+
+    nur_schnell = zeitwahl == SCHNELL_LABEL
+    nur_aufwendig = zeitwahl == AUFWENDIG_LABEL
 
     treffer = filtern(kochbereit, suche=suche, kategorien=gewaehlte_kats or None,
-                       nur_schnell=nur_schnell)
+                       nur_schnell=nur_schnell, nur_aufwendig=nur_aufwendig,
+                       nur_vegetarisch=nur_vegetarisch)
 
     # Der Würfel soll ein Abendessen vorschlagen, kein Gelee. Er zieht aus der
     # aktuellen Auswahl, beschränkt auf Mahlzeiten -- außer der Nutzer hat
@@ -345,6 +365,12 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
             f"Der Würfel zieht aus <b>{len(wuerfel_topf)} Hauptgerichten, Suppen &amp; "
             "Salaten</b> — Nachspeisen, Gebäck und Eingemachtes bleiben außen vor."
         )
+
+    zusaetze = [t for t, an in ((("schnell"), nur_schnell),
+                                ("über eine Stunde", nur_aufwendig),
+                                ("vegetarisch", nur_vegetarisch)) if an]
+    if zusaetze:
+        hinweis += f" Eingeschränkt auf: {e(' und '.join(zusaetze))}."
 
     with st.container(key="wuerfel_panel"):
         if st.session_state.wuerfel_rollt:

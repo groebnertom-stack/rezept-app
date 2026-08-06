@@ -206,3 +206,54 @@ def test_llm_kontext_ist_serialisierbar_und_kompakt():
     json.dumps(kontext)  # darf nicht werfen
     assert "page_id" not in kontext
     assert kontext["basis_einheit"] == "Personen"
+
+
+# ------------------------------------------------- Zeit- und Veggie-Filter
+
+
+def test_zeit_toepfe_schliessen_sich_aus():
+    schnell = rezept_bauen(zeit_minuten=25)
+    grenze = rezept_bauen(zeit_minuten=60)   # genau 1 Std: weder noch
+    lang = rezept_bauen(zeit_minuten=90)
+    ohne = rezept_bauen()                    # keine Zeitangabe
+
+    assert (schnell.ist_schnell, schnell.ist_aufwendig) == (True, False)
+    assert (grenze.ist_schnell, grenze.ist_aufwendig) == (False, False)
+    assert (lang.ist_schnell, lang.ist_aufwendig) == (False, True)
+    assert (ohne.ist_schnell, ohne.ist_aufwendig) == (False, False)
+
+
+def test_vegetarisch_erkennt_fleisch_und_fisch():
+    for zutat in ("Hackfleisch", "Hähnchenbrust", "Bauchspeck", "Lachsfilet",
+                  "Hühnerbrühe", "Rindssuppe", "Salsiccia (Schweinswurst)"):
+        r = rezept_bauen(zutaten=[{"menge": 1, "einheit": None, "zutat": zutat}])
+        assert not r.ist_vegetarisch, zutat
+
+
+def test_vegetarisch_faellt_nicht_auf_komposita_herein():
+    # Alles hier ist vegetarisch, enthaelt aber einen Fleisch-Stamm.
+    for zutat in ("Fleischtomate", "speckige Erdäpfel", "eingelegte Zitrone (Fruchtfleisch)",
+                  "Artischockenherzen", "Butterschmalz", "Parmesanrinde", "Pimente"):
+        r = rezept_bauen(zutaten=[{"menge": 1, "einheit": None, "zutat": zutat}])
+        assert r.ist_vegetarisch, zutat
+
+
+def test_vegetarisch_ohne_zutaten_ist_keine_aussage():
+    r = Rezept(titel="Leer", status=STATUS_PROCESSED)
+    assert not r.ist_vegetarisch
+
+
+def test_filtern_kombiniert_zeit_und_vegetarisch():
+    fleisch_schnell = rezept_bauen(
+        zeit_minuten=20, zutaten=[{"menge": 1, "einheit": None, "zutat": "Speck"}])
+    veggie_schnell = rezept_bauen(
+        zeit_minuten=20, zutaten=[{"menge": 1, "einheit": None, "zutat": "Karotte"}])
+    veggie_lang = rezept_bauen(
+        zeit_minuten=90, zutaten=[{"menge": 1, "einheit": None, "zutat": "Karotte"}])
+    alle = [fleisch_schnell, veggie_schnell, veggie_lang]
+
+    assert filtern(alle, nur_schnell=True, nur_vegetarisch=True) == [veggie_schnell]
+    assert filtern(alle, nur_aufwendig=True) == [veggie_lang]
+    assert filtern(alle, nur_vegetarisch=True) == [veggie_schnell, veggie_lang]
+    # Widerspruch ist in der UI unmoeglich, in der Funktion aber erlaubt:
+    assert filtern(alle, nur_schnell=True, nur_aufwendig=True) == []

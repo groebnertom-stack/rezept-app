@@ -41,6 +41,49 @@ KATEGORIEN_MAHLZEIT = {KAT_HAUPT, KAT_SUPPE, KAT_SALAT}
 # Ab wann ein Rezept als "muss schnell gehen" zaehlt (Gesamtzeit lt. Quelle).
 SCHNELL_SCHWELLE_MINUTEN = 30
 
+# Ab wann ein Rezept als "ich hab Zeit" zaehlt -- laenger als eine Stunde.
+# Rezepte von genau 60 Minuten fallen bewusst in keinen der beiden Toepfe.
+AUFWENDIG_SCHWELLE_MINUTEN = 60
+
+# Zutaten-Stichwoerter, die ein Rezept nicht-vegetarisch machen. Geprueft wird
+# als Teilzeichenkette, weil deutsche Zutaten Komposita sind ("Rinderfilet",
+# "Haehnchenbrust", "Lachsfilet"). Bewusst NICHT in der Liste: mehrdeutige
+# Staemme wie "hack" (gehackte Tomaten), "wild" (Wildreis) oder "bruehe"
+# (Gemuesebruehe) -- die eigentlichen Fleischfaelle fangen andere Woerter ab.
+_FLEISCH_FISCH: tuple[str, ...] = (
+    # Fleisch allgemein und Verarbeitetes
+    "fleisch", "speck", "schinken", "wurst", "salami", "chorizo", "bacon",
+    "pancetta", "guanciale", "gulasch", "steak", "kotelett", "schnitzel",
+    "frikadelle", "hackbraten", "leberkäse", "leberkaese", "sülze", "suelze",
+    # Tiere
+    "rind", "kalb", "schwein", "lamm", "hammel", "ziege", "hirsch", "reh",
+    "kanin", "hase", "huhn", "hühn", "huehn", "hähn", "haehn", "pute",
+    "truthahn", "ente", "gans", "gänse", "gaense", "wachtel", "taube",
+    # Innereien und Tierisches. Bewusst nicht dabei: "herz" (Artischocken-
+    # herzen), "zunge", "niere" -- die echten Faelle fangen "rind" und "kalb".
+    "leber", "gelatine", "schmalz",
+    # Fisch und Meeresfruechte
+    "fisch", "lachs", "forelle", "kabeljau", "dorsch", "hering", "makrele",
+    "zander", "barsch", "wels", "aal", "sardelle", "sardine", "anchovis",
+    "anschovis", "garnele", "shrimp", "scampi", "krabbe", "hummer", "muschel",
+    "tintenfisch", "calamari", "oktopus", "kaviar", "surimi",
+)
+
+# Woerter, die einen der Staemme oben enthalten, aber vegetarisch sind. Sie
+# werden vor der Pruefung aus dem Zutatennamen entfernt. Bewusst spezifisch:
+# ein kurzes "rinde" wuerde auch "Rinderbruehe" entschaerfen und damit echtes
+# Fleisch durchlassen -- deshalb "parmesanrinde" statt "rinde".
+_VEGETARISCHE_AUSNAHMEN: tuple[str, ...] = (
+    "fleischtomate",      # Tomatensorte, kein Fleisch
+    "fruchtfleisch",      # z.B. bei eingelegter Zitrone
+    "speckig",            # "speckige Erdaepfel" = festkochend
+    "butterschmalz", "pflanzenschmalz",
+    "parmesanrinde", "käserinde", "kaeserinde", "brotrinde",
+    "gänseblümchen", "gaensebluemchen",
+    "hirschhornsalz",     # Backtriebmittel
+    "pimente",            # Gewuerz, enthaelt "ente"
+)
+
 # Titel-Stichwörter zur Einordnung, wenn das Rezept noch keine Kategorie hat.
 # Reihenfolge ist bedeutsam: das erste Treffer-Muster gewinnt, deshalb stehen
 # die eindeutigen Fälle (Gelee, Sirup) vor den mehrdeutigen (Kuchen).
@@ -232,6 +275,30 @@ class Rezept:
     @property
     def ist_schnell(self) -> bool:
         return self.zeit_minuten is not None and self.zeit_minuten <= SCHNELL_SCHWELLE_MINUTEN
+
+    @property
+    def ist_aufwendig(self) -> bool:
+        return self.zeit_minuten is not None and self.zeit_minuten > AUFWENDIG_SCHWELLE_MINUTEN
+
+    @property
+    def ist_vegetarisch(self) -> bool:
+        """Kein Fleisch und kein Fisch in der Zutatenliste.
+
+        Heuristik ueber die Zutatennamen, kein LLM -- wie bei kategorie_raten.
+        Sie kann sich irren, wenn eine Zutat verdeckt tierisch ist (Worcester-
+        sauce, Lab im Parmesan). Fuer die Familienkueche ist die uebliche
+        Lesart gemeint: nichts vom Tier, das geschlachtet wurde.
+        Ohne Zutatenliste ist keine Aussage moeglich -- dann false.
+        """
+        if not self.zutaten:
+            return False
+        for z in self.zutaten:
+            text = z.zutat.lower()
+            for ausnahme in _VEGETARISCHE_AUSNAHMEN:
+                text = text.replace(ausnahme, "")
+            if any(wort in text for wort in _FLEISCH_FISCH):
+                return False
+        return True
 
     def anwenden_zutaten_json(self, data: dict[str, Any]) -> None:
         basis_menge = data.get("basis_menge")
@@ -483,6 +550,8 @@ def filtern(
     suche: str = "",
     kategorien: Optional[Iterable[str]] = None,
     nur_schnell: bool = False,
+    nur_aufwendig: bool = False,
+    nur_vegetarisch: bool = False,
 ) -> list[Rezept]:
     treffer = list(rezepte)
     if status:
@@ -492,6 +561,10 @@ def filtern(
         treffer = [r for r in treffer if r.kategorie in erlaubt]
     if nur_schnell:
         treffer = [r for r in treffer if r.ist_schnell]
+    if nur_aufwendig:
+        treffer = [r for r in treffer if r.ist_aufwendig]
+    if nur_vegetarisch:
+        treffer = [r for r in treffer if r.ist_vegetarisch]
     if suche.strip():
         needle = suche.strip().lower()
         treffer = [

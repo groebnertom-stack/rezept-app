@@ -49,7 +49,13 @@ class FakeRepo:
                 "zutaten": [{"menge": 1500, "einheit": "ml", "zutat": "Holunderbluetensud"}]}),
             _bau("Tofu-Curry mit Spinat", "verarbeitet", {
                 "basis_menge": 4, "basis_einheit": "Personen", "kategorie": "Hauptgericht",
+                "zeit_minuten": 20,
                 "zutaten": [{"menge": 400, "einheit": "g", "zutat": "Tofu"}]}),
+            # Fleisch und lange Garzeit -- Gegenstueck fuer die neuen Filter.
+            _bau("Rinderbraten", "verarbeitet", {
+                "basis_menge": 6, "basis_einheit": "Personen", "kategorie": "Hauptgericht",
+                "zeit_minuten": 180,
+                "zutaten": [{"menge": 1500, "einheit": "g", "zutat": "Rinderbraten"}]}),
             _bau("Karottenkuchen", "verarbeitet", {
                 "basis_menge": 12, "basis_einheit": "Stücke",
                 "zutaten": [{"menge": 300, "einheit": "g", "zutat": "Karotten"}]}),
@@ -103,7 +109,8 @@ def main() -> int:
 
     optionen = at.selectbox[0].options
     assert optionen == [
-        "Holunderbluetengelee", "Karottenkuchen", "Kartoffelknoedel", "Tofu-Curry mit Spinat",
+        "Holunderbluetengelee", "Karottenkuchen", "Kartoffelknoedel", "Rinderbraten",
+        "Tofu-Curry mit Spinat",
     ], optionen
     print("✓ Rezeptauswahl zeigt nur kochbereite Rezepte:", optionen)
 
@@ -117,8 +124,8 @@ def main() -> int:
 
     # Der Würfel darf keine Nachspeise und kein Eingemachtes als Abendessen ziehen.
     markup_start = " ".join(m.value for m in at.markdown)
-    assert "aus <b>1 Hauptgerichten, Suppen" in markup_start, "Würfel-Topf falsch eingegrenzt"
-    print("✓ Würfel-Topf: 1 von 4 Rezepten (Gelee, Kuchen, Beilage ausgeschlossen)")
+    assert "aus <b>2 Hauptgerichten, Suppen" in markup_start, "Würfel-Topf falsch eingegrenzt"
+    print("✓ Würfel-Topf: 2 von 5 Rezepten (Gelee, Kuchen, Beilage ausgeschlossen)")
 
     assert set(at.multiselect[0].options) == {
         "Hauptgericht", "Beilage", "Nachspeise", "Eingemachtes",
@@ -190,6 +197,34 @@ def main() -> int:
         at_kat2.selectbox[0].options
     print("✓ Mehrfachauswahl im Kategorie-Filter funktioniert")
 
+    # --- Zeit-Umschalter und Vegetarisch-Filter
+    at_zeit = AppTest.from_file(str(ziel), default_timeout=90)
+    at_zeit.run()
+    # .options liefert den Text ohne fuehrendes Emoji -- Streamlit zieht es als
+    # Icon ab. select() braucht aber die vollstaendige Beschriftung, also aus
+    # dem Proto zusammensetzen statt sie hier zu wiederholen.
+    zeit_optionen = [f"{o.content_icon} {o.content}" for o in at_zeit.pills[0].proto.options]
+    schnell_label, aufwendig_label = zeit_optionen
+
+    at_zeit.pills[0].select(schnell_label).run()
+    assert not at_zeit.exception, [e.value for e in at_zeit.exception]
+    assert at_zeit.selectbox[0].options == ["Tofu-Curry mit Spinat"], at_zeit.selectbox[0].options
+    print("✓ Filter „Muss schnell gehen“: nur das 20-Minuten-Rezept")
+
+    at_lang = AppTest.from_file(str(ziel), default_timeout=90)
+    at_lang.run()
+    at_lang.pills[0].select(aufwendig_label).run()
+    assert at_lang.selectbox[0].options == ["Rinderbraten"], at_lang.selectbox[0].options
+    print("✓ Filter „Ich hab Zeit“: nur das 3-Stunden-Rezept")
+
+    at_veg = AppTest.from_file(str(ziel), default_timeout=90)
+    at_veg.run()
+    at_veg.checkbox[0].set_value(True).run()
+    assert not at_veg.exception, [e.value for e in at_veg.exception]
+    assert "Rinderbraten" not in at_veg.selectbox[0].options, at_veg.selectbox[0].options
+    assert "Tofu-Curry mit Spinat" in at_veg.selectbox[0].options, at_veg.selectbox[0].options
+    print("✓ Filter „Vegetarisch“: Rinderbraten raus, Tofu-Curry drin")
+
     # --- Schreibzugriff: die Upload-Kachel erscheint nur, wenn ausdrücklich erlaubt
     at_ro = AppTest.from_file(str(ziel), default_timeout=90)
     at_ro.run()
@@ -216,8 +251,8 @@ def main() -> int:
         assert not at_up.exception, [e.value for e in at_up.exception]
 
         markup_up = " ".join(m.value for m in at_up.markdown)
-        assert 'class="zahl">7<' in markup_up, "Gesamtzahl der Statistik falsch"
-        print("✓ Ansicht „Upload“: Statistik-Kacheln gerendert (7 Rezepte gesamt)")
+        assert 'class="zahl">8<' in markup_up, "Gesamtzahl der Statistik falsch"
+        print("✓ Ansicht „Upload“: Statistik-Kacheln gerendert (8 Rezepte gesamt)")
 
         assert len(at_up.radio) == 1, at_up.radio
         assert at_up.radio[0].options[0] == "Verarbeiten", at_up.radio[0].options
