@@ -292,6 +292,10 @@ class Rezept:
             "basis_geschaetzt": self.basis_geschaetzt,
             "hinweis": self.hinweis,
             "zeit_minuten": self.zeit_minuten,
+            # Vorberechnet statt dem Modell die Rechnung zu ueberlassen: leichte
+            # Modelle vergleichen zeit_minuten unzuverlaessig und listen dann
+            # ein 38-Minuten-Rezept unter "in 30 Minuten fertig".
+            "schnell": self.ist_schnell,
             "zutaten": [
                 {"menge": z.menge, "einheit": z.einheit, "zutat": z.zutat}
                 for z in self.zutaten

@@ -57,7 +57,8 @@ Lokal aus `.env`, in der Cloud aus den App-Secrets — beides landet in denselbe
 | `NOTION_TOKEN` | ja | Secret der internen Notion-Integration |
 | `NOTION_DATABASE_ID` | ja | `5ef6746d9a144974a0fbb499f845100f` |
 | `ANTHROPIC_API_KEY` | ja | Key von console.anthropic.com |
-| `ANTHROPIC_MODEL` | nein | Standard `claude-sonnet-5` |
+| `ANTHROPIC_MODEL` | nein | Modell der Extraktion, Standard `claude-sonnet-5` |
+| `ANTHROPIC_CHAT_MODEL` | nein | Modell des Chats, Standard `claude-haiku-4-5` |
 | `REZEPTE_SCHREIBZUGRIFF` | nein | `true` blendet „Verarbeiten“ und „Fehler“ ein. **Standard `false`** |
 | `REZEPTE_CHAT_LIMIT` | nein | LLM-Fragen pro Browser-Sitzung, Standard `25`, `0` = kein Limit |
 

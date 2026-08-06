@@ -21,7 +21,12 @@ from anthropic import Anthropic
 
 from models import KATEGORIEN, Rezept
 
-MODELL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
+# Chat und Extraktion sind getrennt einstellbar, weil sie unterschiedlich
+# belastet sind: der Chat laeuft oft und sucht in bereits strukturierten Daten,
+# die Extraktion laeuft selten und entscheidet, wie viel Handarbeit ein Rezept
+# spaeter kostet -- ein Fehler dort landet als "Fehler"-Status auf dem Tisch.
+CHAT_MODELL = os.environ.get("ANTHROPIC_CHAT_MODEL", "claude-haiku-4-5")
+EXTRAKTION_MODELL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
 
 CHAT_SYSTEM = """Du bist der Küchen-Assistent einer familieninternen Rezeptsammlung.
 
@@ -45,8 +50,16 @@ Treffer, je mit einem Satz Begründung.
 kochen", "welche Rezepte sind vegetarisch", "was geht schnell").
 - Feld "zeit_minuten" ist die Gesamtzeit aus der Quelle, falls dort angegeben -- \
 sonst null. Ist es null, erfinde keine Zeitangabe; sag stattdessen, dass die \
-Quelle keine Zeit nennt. Bei "was geht schnell" nur Rezepte mit gesetztem \
-zeit_minuten nennen (Richtwert bis 30 Minuten), nicht raten.
+Quelle keine Zeit nennt.
+- Bei "was geht schnell", "in 30 Minuten" oder Ähnlichem gilt ausschließlich das \
+Feld "schnell". Nenne nur Rezepte mit schnell: true. Vergleiche dafür NIEMALS \
+selbst zeit_minuten mit einer Grenze — das Feld ist bereits ausgerechnet. Ein \
+Rezept mit schnell: false gehört nicht in die Liste, auch nicht mit einer \
+Einschränkung in Klammern.
+- Antworte direkt. Stelle keine Rückfragen nach Personenzahl, Vorlieben oder \
+verfügbaren Zutaten, bevor du Vorschläge machst. Bei einer allgemeinen Frage \
+("Was koche ich heute Abend?") nennst du sofort passende Rezepte und bietest \
+erst danach an, die Auswahl einzugrenzen.
 - Die Zubereitungsschritte stehen dir NICHT zur Verfügung. Fragt jemand "wie \
 mache ich X" oder "was muss ich tun", erfinde keine Arbeitsschritte und leite \
 sie auch nicht aus den Zutaten ab. Sage stattdessen, dass die Schritte im \
@@ -175,15 +188,13 @@ def chat_antwort(
     # koennte prinzipiell nie greifen -- bei ~34.000 Token pro Frage teuer.
     # Cache-Treffer kosten rund ein Zehntel; jeder Treffer verlaengert die
     # Lebensdauer des Eintrags, sodass ein Gespraech durchgehend billig bleibt.
-    # max_tokens deckt Denken UND Antwort ab: Sonnet 5 denkt von sich aus mit,
-    # und bei den frueheren 1200 Token blieb fuer die Antwort so wenig uebrig,
-    # dass sie mitten im Satz abbrach. effort "low" passt zur Aufgabe -- die
-    # Regeln stehen im System-Prompt, gesucht wird in fertigen Daten -- und
-    # halbiert nebenbei die Wartezeit.
+    # Kein output_config/effort: Haiku 4.5 kennt den Parameter nicht und lehnt
+    # die Anfrage damit ab. max_tokens bleibt grosszuegig, weil es bei den
+    # denkenden Modellen Denken UND Antwort gemeinsam deckelt -- mit den
+    # frueheren 1200 Token brachen Antworten mitten im Satz ab.
     antwort = _client().messages.create(
-        model=MODELL,
+        model=CHAT_MODELL,
         max_tokens=max_tokens,
-        output_config={"effort": "low"},
         system=[
             {"type": "text", "text": CHAT_SYSTEM},
             {
@@ -270,7 +281,7 @@ def zutaten_extrahieren(titel: str, rohtext: str, quelle: str = "") -> dict[str,
     )
 
     antwort = _client().messages.create(
-        model=MODELL,
+        model=EXTRAKTION_MODELL,
         max_tokens=6000,
         system=EXTRAKTION_SYSTEM,
         messages=[{"role": "user", "content": prompt}],
@@ -322,7 +333,7 @@ def zutaten_aus_bildern_extrahieren(
     )
 
     antwort = _client().messages.create(
-        model=MODELL,
+        model=EXTRAKTION_MODELL,
         max_tokens=6000,
         system=EXTRAKTION_SYSTEM,
         messages=[{"role": "user", "content": content}],
