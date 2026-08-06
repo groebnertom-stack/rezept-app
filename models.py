@@ -274,9 +274,16 @@ class Rezept:
             self.kategorie = kategorie_raten(self.titel, self.basis_einheit)
             self.kategorie_geraten = True
 
-    def als_llm_kontext(self) -> dict[str, Any]:
-        """Kompakte Darstellung fuer den Chat-Kontext -- ohne Ballast wie page_id."""
-        return {
+    def als_llm_kontext(self, mit_zubereitung: bool = False) -> dict[str, Any]:
+        """Kompakte Darstellung fuer den Chat-Kontext -- ohne Ballast wie page_id.
+
+        Die Zubereitungsschritte bleiben standardmaessig draussen: sie machen
+        rund ein Drittel des Kontexts aus, den der Chat bei jeder Frage
+        mitschleppt, waehrend die typische Frage ("was kann ich aus Kartoffeln
+        kochen") nur Titel, Kategorie und Zutaten braucht. Die Schritte stehen
+        weiterhin vollstaendig in der Rezeptansicht.
+        """
+        daten: dict[str, Any] = {
             "titel": self.titel,
             "kategorie": self.kategorie,
             "quelle": self.weblink,
@@ -289,8 +296,10 @@ class Rezept:
                 {"menge": z.menge, "einheit": z.einheit, "zutat": z.zutat}
                 for z in self.zutaten
             ],
-            "zubereitung": self.zubereitung,
         }
+        if mit_zubereitung:
+            daten["zubereitung"] = self.zubereitung
+        return daten
 
 
 def zutaten_json_parsen(roh: Optional[str]) -> dict[str, Any]:

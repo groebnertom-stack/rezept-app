@@ -47,9 +47,11 @@ kochen", "welche Rezepte sind vegetarisch", "was geht schnell").
 sonst null. Ist es null, erfinde keine Zeitangabe; sag stattdessen, dass die \
 Quelle keine Zeit nennt. Bei "was geht schnell" nur Rezepte mit gesetztem \
 zeit_minuten nennen (Richtwert bis 30 Minuten), nicht raten.
-- Feld "zubereitung" enthält die Arbeitsschritte in Reihenfolge. Fragt jemand \
-"wie mache ich X" oder "was muss ich tun", fasse diese Schritte zusammen statt \
-nur auf Zutaten einzugehen.
+- Die Zubereitungsschritte stehen dir NICHT zur Verfügung. Fragt jemand "wie \
+mache ich X" oder "was muss ich tun", erfinde keine Arbeitsschritte und leite \
+sie auch nicht aus den Zutaten ab. Sage stattdessen, dass die Schritte im \
+Rezept selbst stehen, und verweise auf den Reiter „Würfeln“, wo sich das Rezept \
+über die Suche öffnen lässt. Zutaten, Mengen und Zeit darfst du dabei nennen.
 """
 
 EXTRAKTION_SYSTEM = """Du extrahierst aus Rezepttexten strukturierte Zutatenlisten \
