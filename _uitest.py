@@ -127,11 +127,6 @@ def main() -> int:
     assert "aus <b>2 Hauptgerichten, Suppen" in markup_start, "Würfel-Topf falsch eingegrenzt"
     print("✓ Würfel-Topf: 2 von 5 Rezepten (Gelee, Kuchen, Beilage ausgeschlossen)")
 
-    assert set(at.multiselect[0].options) == {
-        "Hauptgericht", "Beilage", "Nachspeise", "Eingemachtes",
-    }, at.multiselect[0].options
-    print("✓ Kategorie-Filter bietet:", sorted(at.multiselect[0].options))
-
     # Auf das Rezept mit geschätzter Basismenge und gemischten Zutaten wechseln
     at.selectbox[0].set_value("Kartoffelknoedel").run()
     markup = " ".join(m.value for m in at.markdown)
@@ -181,21 +176,6 @@ def main() -> int:
     markup_chat = " ".join(m.value for m in at_chat.markdown)
     assert "AUS DEM VORRAT" in markup_chat.upper(), "Gruppierte Einstiege fehlen"
     print("✓ Ansicht „Fragen“: gruppierte Einstiege im Leerzustand")
-
-    # --- Kategorie-Filter in eigener Instanz (verändert die Auswahlliste)
-    at_kat = AppTest.from_file(str(ziel), default_timeout=90)
-    at_kat.run()
-    at_kat.multiselect[0].set_value(["Eingemachtes"]).run()
-    assert not at_kat.exception, [e.value for e in at_kat.exception]
-    assert at_kat.selectbox[0].options == ["Holunderbluetengelee"], at_kat.selectbox[0].options
-    print("✓ Filter „Eingemachtes“ lässt nur das Gelee übrig")
-
-    at_kat2 = AppTest.from_file(str(ziel), default_timeout=90)
-    at_kat2.run()
-    at_kat2.multiselect[0].set_value(["Nachspeise", "Beilage"]).run()
-    assert set(at_kat2.selectbox[0].options) == {"Karottenkuchen", "Kartoffelknoedel"}, \
-        at_kat2.selectbox[0].options
-    print("✓ Mehrfachauswahl im Kategorie-Filter funktioniert")
 
     # --- Zeit-Umschalter und Vegetarisch-Filter
     at_zeit = AppTest.from_file(str(ziel), default_timeout=90)

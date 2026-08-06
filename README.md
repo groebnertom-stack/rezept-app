@@ -95,8 +95,9 @@ sie mit; für Rezepte aus der Zeit davor greift eine Heuristik aus Titel und Bas
 (`kategorie_raten`), erkennbar am `?` hinter dem Kategorie-Label in der UI.
 
 Der Würfel zieht nur aus Hauptgericht, Suppe und Salat — sonst schlägt er
-Holunderblütengelee als Abendessen vor. Filtert man ausdrücklich nach einer Kategorie,
-würfelt er innerhalb dieser Auswahl.
+Holunderblütengelee als Abendessen vor. Ein eigenes Kategorie-Filterfeld gibt es
+in der UI nicht (mehr); die Rezeptauswahl unten filtert stattdessen per Tippen
+im Titel.
 
 Die Heuristik prüft auf Wortenden, nicht auf Teilstrings: „Hühner**suppe**” wird als
 Suppe erkannt, „**Pesto**fisch” aber nicht als Eingemachtes und „Ofenlachs mit R**eis**”

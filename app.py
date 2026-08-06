@@ -23,7 +23,6 @@ import bilder as bilder_modul
 import llm
 from models import (
     AUFWENDIG_SCHWELLE_MINUTEN,
-    KATEGORIEN,
     SCHNELL_SCHWELLE_MINUTEN,
     STATUS_ERROR,
     STATUS_PROCESSED,
@@ -310,24 +309,11 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
         st.info("Noch kein Rezept mit strukturierten Zutaten. Starte im Reiter „Verarbeiten“.")
         return
 
-    # Nur Kategorien anbieten, die tatsächlich belegt sind.
-    vorhandene = [k for k in KATEGORIEN if any(r.kategorie == k for r in kochbereit)]
-
-    # Kein Suchfeld hier -- die Rezeptauswahl weiter unten hat ihre eigene
-    # Suche, ein zweites Feld direkt unter dem Header war redundant.
-    katspalte, veggiespalte = st.columns([2.5, 1.4], gap="small")
-
-    with katspalte:
-        gewaehlte_kats = st.multiselect(
-            "Kategorien",
-            vorhandene,
-            default=[],
-            placeholder="Alle Kategorien",
-            label_visibility="collapsed",
-        )
-    with veggiespalte:
-        with st.container(key="veggie_filter"):
-            nur_vegetarisch = st.checkbox("🌱 Vegetarisch")
+    # Kein Suchfeld und keine Kategorieauswahl hier -- die Rezeptauswahl
+    # weiter unten hat ihre eigene Suche, und die Kategorie war ein zweiter
+    # Filter direkt unter dem Header, der die Flaeche unnoetig fuellte.
+    with st.container(key="veggie_filter"):
+        nur_vegetarisch = st.checkbox("🌱 Vegetarisch")
 
     # Zeit ist ein Umschalter, kein Paar Haekchen: "schnell" und "hab Zeit"
     # schliessen sich aus, zwei Checkboxen koennten beide an sein und haetten
@@ -344,27 +330,17 @@ def tab_kochen(rezepte: list[Rezept]) -> None:
     nur_schnell = zeitwahl == SCHNELL_LABEL
     nur_aufwendig = zeitwahl == AUFWENDIG_LABEL
 
-    treffer = filtern(kochbereit, kategorien=gewaehlte_kats or None,
-                       nur_schnell=nur_schnell, nur_aufwendig=nur_aufwendig,
+    treffer = filtern(kochbereit, nur_schnell=nur_schnell, nur_aufwendig=nur_aufwendig,
                        nur_vegetarisch=nur_vegetarisch)
 
-    # Der Würfel soll ein Abendessen vorschlagen, kein Gelee. Er zieht aus der
-    # aktuellen Auswahl, beschränkt auf Mahlzeiten -- außer der Nutzer hat
-    # ausdrücklich nach Nachspeisen oder Eingemachtem gefiltert.
-    if gewaehlte_kats:
-        wuerfel_topf = treffer
-    else:
-        wuerfel_topf = [r for r in treffer if r.ist_mahlzeit]
+    # Der Würfel soll ein Abendessen vorschlagen, kein Gelee -- er zieht nur
+    # aus Hauptgerichten, Suppen und Salaten.
+    wuerfel_topf = [r for r in treffer if r.ist_mahlzeit]
 
-    if gewaehlte_kats:
-        hinweis = (
-            f"Der Würfel zieht aus <b>{len(wuerfel_topf)} Rezepten</b> der aktuellen Auswahl."
-        )
-    else:
-        hinweis = (
-            f"Der Würfel zieht aus <b>{len(wuerfel_topf)} Hauptgerichten, Suppen &amp; "
-            "Salaten</b> — Nachspeisen, Gebäck und Eingemachtes bleiben außen vor."
-        )
+    hinweis = (
+        f"Der Würfel zieht aus <b>{len(wuerfel_topf)} Hauptgerichten, Suppen &amp; "
+        "Salaten</b> — Nachspeisen, Gebäck und Eingemachtes bleiben außen vor."
+    )
 
     zusaetze = [t for t, an in ((("schnell"), nur_schnell),
                                 ("über eine Stunde", nur_aufwendig),
